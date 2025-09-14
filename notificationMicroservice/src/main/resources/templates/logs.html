@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcement Logs | NotifyCommute</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/styles/styles.css}">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl font-bold text-gray-800">
+                    <a th:href="@{/admin/home}">NotifyCommute Admin</a>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a th:href="@{/admin/home}" class="text-gray-600 hover:text-blue-600">Home</a>
+                    <a th:href="@{/admin/announcement}" class="text-gray-600 hover:text-blue-600">Announcements</a>
+                    <a th:href="@{/admin/alert-types}" class="text-gray-600 hover:text-blue-600">Alert Types</a>
+                    <a th:href="@{/admin/logs}" class="text-gray-600 hover:text-blue-600">Logs</a>
+                    <form th:action="@{/logout}" method="post" class="inline">
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-8 flex-grow">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Announcement Logs</h1>
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Delivery Status</h2>
+            <p class="text-gray-600">This page will display the status of all sent notifications.</p>
+            <div class="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-lg">
+                <strong>Under Construction:</strong> The log display functionality is not yet implemented.
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-200 text-center text-sm py-4 mt-auto">
+        <div class="container mx-auto">
+            &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> Notification Microservice. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script th:src="@{/scripts/scripts.js}"></script>
+</body>
+</html>
+
