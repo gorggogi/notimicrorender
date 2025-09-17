@@ -22,7 +22,7 @@ public class UserService {
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword()); // In a real application, you should hash the password here.
-        user.setUserPhoneNumber(userDTO.getPhoneNumber());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
 
         return userRepository.save(user);
     }
