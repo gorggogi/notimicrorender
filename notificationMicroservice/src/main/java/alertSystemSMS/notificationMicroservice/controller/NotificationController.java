@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,6 +26,34 @@ public class NotificationController {
         return ResponseEntity.ok("Notification sent successfully.");
     }
 
+    /**
+     * GET endpoint to retrieve all alert types and the user's subscription status for each.
+     */
+    @GetMapping("/users/{userId}/preferences")
+    public ResponseEntity<List<Map<String, Object>>> getAllUserPreferences(@PathVariable Long userId) {
+        List<Map<String, Object>> preferences = notificationService.getAllUserPreferences(userId);
+        return ResponseEntity.ok(preferences);
+    }
+
+    /**
+     * GET endpoint to check a user's subscription status for a single, specific alert.
+     */
+    @GetMapping("/users/{userId}/preferences/{alertId}")
+    public ResponseEntity<Map<String, Boolean>> getUserPreference(
+            @PathVariable Long userId,
+            @PathVariable Long alertId) {
+
+        boolean isEnabled = notificationService.getUserPreference(userId, alertId);
+
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("isEnabled", isEnabled);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * POST endpoint to update a user's subscription preference for a single alert.
+     */
     @PostMapping("/users/{userId}/preferences")
     public ResponseEntity<String> setUserPreference(
         @PathVariable Long userId,
