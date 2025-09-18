@@ -5,9 +5,9 @@ import alertSystemSMS.notificationMicroservice.repository.AlertTypeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+// import org.springframework.stereotype.Component; // Unused since @Component is disabled
 
-@Component // Re-enabled to create alert types (needed for settings sync)
+//@Component // Disabled - alert types should be created by admins via web interface
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
