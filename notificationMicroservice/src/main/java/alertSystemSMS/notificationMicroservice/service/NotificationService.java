@@ -161,5 +161,47 @@ public class NotificationService {
 
         return responseList;
     }
+
+    /**
+     * Send notification to a specific user by userId
+     * Used by other microservices (e.g., payment service sending receipt)
+     */
+    public boolean sendNotificationToUser(Long userId, String content) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
+                sendSms(user.getUserPhoneNumber(), content);
+                System.out.println("Notification sent to user " + userId + ": " + content);
+                return true;
+            } else {
+                System.err.println("User " + userId + " has no phone number");
+                return false;
+            }
+        } else {
+            System.err.println("User " + userId + " not found");
+            return false;
+        }
+    }
+
+    /**
+     * Send notification to all users
+     * Used by other microservices for system-wide announcements
+     */
+    public int sendNotificationToAllUsers(String content) {
+        List<User> allUsers = userRepository.findAll();
+        int sentCount = 0;
+        
+        System.out.println("Sending notification to all users: " + content);
+        for (User user : allUsers) {
+            if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
+                sendSms(user.getUserPhoneNumber(), content);
+                sentCount++;
+            }
+        }
+        
+        System.out.println("Notification sent to " + sentCount + " out of " + allUsers.size() + " users");
+        return sentCount;
+    }
 }
 

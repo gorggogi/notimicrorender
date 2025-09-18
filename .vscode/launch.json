@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-NotificationMicroserviceApplication<notificationMicroservice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "alertSystemSMS.notificationMicroservice.NotificationMicroserviceApplication",
+            "projectName": "notificationMicroservice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
