@@ -71,5 +71,41 @@ public class NotificationController {
         notificationService.logSmsDeliveryStatus(messageSid, status);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * API for other microservices to send notification to a specific user
+     * Example: Payment microservice sending receipt notification
+     */
+    @PostMapping("/send/user/{userId}")
+    public ResponseEntity<String> sendNotificationToUser(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> payload) {
+        String content = payload.get("content");
+        if (content == null || content.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Content is required");
+        }
+        
+        boolean success = notificationService.sendNotificationToUser(userId, content);
+        if (success) {
+            return ResponseEntity.ok("Notification sent successfully to user " + userId);
+        } else {
+            return ResponseEntity.badRequest().body("Failed to send notification - user not found or no phone number");
+        }
+    }
+
+    /**
+     * API for other microservices to send notification to all users
+     * Example: System maintenance announcement
+     */
+    @PostMapping("/send/all")
+    public ResponseEntity<String> sendNotificationToAllUsers(@RequestBody Map<String, String> payload) {
+        String content = payload.get("content");
+        if (content == null || content.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Content is required");
+        }
+        
+        int sentCount = notificationService.sendNotificationToAllUsers(content);
+        return ResponseEntity.ok("Notification sent to " + sentCount + " users");
+    }
 }
 

@@ -25,11 +25,11 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/api/**")
+            .securityMatcher("/api/**", "/test/**")
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // For now, allow API access, but in production, you'd secure this
+                // For now, allow API access and test endpoints, but in production, you'd secure this
                 .anyRequest().permitAll()
             );
         return http.build();
