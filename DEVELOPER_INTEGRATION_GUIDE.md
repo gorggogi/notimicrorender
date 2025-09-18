@@ -34,7 +34,7 @@ await fetch(`${API_URL}/users`, {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     firstName: "John", lastName: "Doe", email: "john@example.com",
-    password: "password123", phoneNumber: "09123456789"
+    password: "password123", userPhoneNumber: "09123456789"
   })
 });
 
@@ -65,7 +65,7 @@ API_URL = "http://localhost:8081/api"
 # 1. Register user
 requests.post(f"{API_URL}/users", json={
     "firstName": "Jane", "lastName": "Smith", "email": "jane@example.com",
-    "password": "password123", "phoneNumber": "09987654321"
+    "password": "password123", "userPhoneNumber": "09987654321"
 })
 
 # 2. Get preferences
@@ -109,7 +109,7 @@ const API_URL = 'http://localhost:8081/api';
 // 1. Register user
 await axios.post(`${API_URL}/users`, {
   firstName: "Bob", lastName: "Wilson", email: "bob@example.com",
-  password: "password123", phoneNumber: "09555123456"
+  password: "password123", userPhoneNumber: "09555123456"
 });
 
 // 2. Get preferences
@@ -145,7 +145,7 @@ await axios.post(`${API_URL}/preferences/bob@example.com`, {
   "lastName": "Doe", 
   "email": "john@example.com",
   "password": "password123",
-  "phoneNumber": "09123456789"
+  "userPhoneNumber": "09123456789"
 }
 ```
 
@@ -241,7 +241,7 @@ const schoolSystem = new SchoolAlertSystem();
 // Register parent
 await schoolSystem.registerParent({
   firstName: "Maria", lastName: "Garcia", email: "maria@example.com",
-  password: "securepass", phoneNumber: "09123456789"
+  password: "securepass", userPhoneNumber: "09123456789"
 });
 
 // Enable emergency and school alerts only
@@ -272,7 +272,7 @@ curl -X POST http://localhost:8081/api/users \
     "lastName": "User", 
     "email": "test@example.com",
     "password": "password",
-    "phoneNumber": "09123456789"
+    "userPhoneNumber": "09123456789"
   }'
 ```
 

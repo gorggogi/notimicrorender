@@ -6,17 +6,17 @@ public class UserDTO {
     private String lastName;
     private String email;
     private String password;
-    private String phoneNumber;
+    private String userPhoneNumber;
 
     public UserDTO() {
     }
 
-    public UserDTO(String firstName, String lastName, String email, String password, String phoneNumber) {
+    public UserDTO(String firstName, String lastName, String email, String password, String userPhoneNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.phoneNumber = phoneNumber;
+        this.userPhoneNumber = userPhoneNumber;
     }
 
     public String getFirstName() {
@@ -51,11 +51,11 @@ public class UserDTO {
         this.password = password;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getUserPhoneNumber() {
+        return userPhoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setUserPhoneNumber(String userPhoneNumber) {
+        this.userPhoneNumber = userPhoneNumber;
     }
 }

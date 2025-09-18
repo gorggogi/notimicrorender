@@ -55,8 +55,8 @@ public class NotificationService {
         System.out.println("Found " + subscriptions.size() + " subscribed user(s). Sending SMS...");
         for (UserPreferenceAlertType subscription : subscriptions) {
             User user = subscription.getUser();
-            if (user != null && user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()) {
-                sendSms(user.getPhoneNumber(), messageContent);
+            if (user != null && user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
+                sendSms(user.getUserPhoneNumber(), messageContent);
             }
         }
         System.out.println("-----");

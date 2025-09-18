@@ -23,8 +23,8 @@ public class UserController {
     @PostMapping
     public void receiveUserData(@RequestBody UserDTO userDTO) {
         logger.info("Received user data request for email: {}", userDTO.getEmail());
-        logger.info("User data received: firstName={}, lastName={}, email={}, phoneNumber={}", 
-                userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(), userDTO.getPhoneNumber());
+        logger.info("User data received: firstName={}, lastName={}, email={}, userPhoneNumber={}", 
+                userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(), userDTO.getUserPhoneNumber());
         try {
             userService.createUser(userDTO);
             logger.info("Successfully created user in notification database for email: {}", userDTO.getEmail());

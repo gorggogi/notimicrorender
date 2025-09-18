@@ -18,7 +18,7 @@ public class User {
     private String lastName;
     private String email;
     private String password;
-    private String phoneNumber;
+    private String userPhoneNumber;
 
     // Getters and Setters
 
@@ -62,12 +62,12 @@ public class User {
         this.password = password;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getUserPhoneNumber() {
+        return userPhoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setUserPhoneNumber(String userPhoneNumber) {
+        this.userPhoneNumber = userPhoneNumber;
     }
 }
 
