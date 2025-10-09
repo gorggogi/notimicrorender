@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Alert Types | NotifyCommute</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/styles/styles.css}">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+       <div th:replace="~{fragments/header :: header}"></div>
+
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-8 flex-grow">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Alert Types</h1>
+
+        <div th:if="${success}" class="bg-green-100 border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+            <p th:text="${success}"></p>
+        </div>
+        <div th:if="${error}" class="bg-red-100 border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <p th:text="${error}"></p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Add New Alert Type</h2>
+                    <form th:action="@{/admin/alert-types}" th:object="${newAlertType}" method="post">
+                        <div class="mb-4">
+                            <label for="alertName" class="block mb-2 text-sm font-medium">Alert Name</label>
+                            <input type="text" th:field="*{alertName}" id="alertName" class="bg-gray-50 border border-gray-300 rounded-lg block w-full p-2.5" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="alertDescription" class="block mb-2 text-sm font-medium">Description</label>
+                            <textarea th:field="*{alertDescription}" id="alertDescription" rows="3" class="block p-2.5 w-full text-sm rounded-lg border border-gray-300"></textarea>
+                        </div>
+                        <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center">
+                            Add Alert Type
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="md:col-span-2">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Existing Alert Types</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm text-left">
+                            <thead class="text-xs uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3">ID</th>
+                                <th class="px-6 py-3">Name</th>
+                                <th class="px-6 py-3">Description</th>
+                                <th class="px-6 py-3">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="alert : ${alertTypes}" class="bg-white border-b">
+                                <td class="px-6 py-4" th:text="${alert.alertId}"></td>
+                                <td class="px-6 py-4 font-medium" th:text="${alert.alertName}"></td>
+                                <td class="px-6 py-4" th:text="${alert.alertDescription}"></td>
+                                <td class="px-6 py-4">
+                                    <form th:action="@{'/admin/alert-types/delete/' + ${alert.alertId}}" method="post" onsubmit="return confirm('Are you sure?');">
+                                        <button type="submit" class="font-medium text-red-600 hover:underline">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(alertTypes)}">
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">No alert types found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-center text-sm py-4 mt-auto">
+        <div class="container mx-auto">
+            &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> Notification Microservice. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script th:src="@{/scripts/scripts.js}"></script>
+</body>
+</html>
+

@@ -3,7 +3,7 @@ Dockerfile
 .git
 .gitignore
 .idea
-.mvn
-mvnw
-mvnw.cmd
-target
+*/.mvn
+*/mvnw
+*/mvnw.cmd
+*/target
