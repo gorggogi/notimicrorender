@@ -6,13 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    // Root path redirects to the login page
     @GetMapping("/")
     public String root() {
         return "redirect:/login";
     }
 
-    // Explicitly handle the /login GET request
     @GetMapping("/login")
     public String loginPage() {
         return "login";
@@ -28,9 +26,9 @@ public class HomeController {
         return "redirect:/admin/home";
     }
 
-    @GetMapping("/admin/logs")
-    public String logsPage() {
-        return "logs";
-    }
+    // REMOVED THIS METHOD - It is now handled by AnalyticsController
+    // @GetMapping("/admin/logs")
+    // public String logsPage() {
+    //     return "logs";
+    // }
 }
-

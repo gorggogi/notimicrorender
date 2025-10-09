@@ -32,6 +32,9 @@ public class NotificationLog {
     @Column(nullable = false)
     private String status; // e.g., "SENT", "DELIVERED", "FAILED"
 
+    @Column
+    private String sentTo;
+
     // Constructors
     public NotificationLog() {}
 
@@ -67,5 +70,12 @@ public class NotificationLog {
     public void setStatus(String status) {
         this.status = status;
     }
-}
 
+    public String getSentTo() {
+        return sentTo;
+    }
+
+    public void setSentTo(String sentTo) {
+        this.sentTo = sentTo;
+    }
+}

@@ -10,27 +10,8 @@
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-    <!-- Header -->
-    <header class="bg-white shadow-md">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="text-2xl font-bold text-gray-800">
-                    <a th:href="@{/admin/home}">NotifyCommute Admin</a>
-                </div>
-                <div class="flex items-center space-x-6">
-                    <a th:href="@{/admin/home}" class="text-gray-600 hover:text-blue-600">Home</a>
-                    <a th:href="@{/admin/announcement}" class="text-gray-600 hover:text-blue-600">Announcements</a>
-                    <a th:href="@{/admin/alert-types}" class="text-gray-600 hover:text-blue-600">Alert Types</a>
-                    <a th:href="@{/admin/logs}" class="text-gray-600 hover:text-blue-600">Logs</a>
-                    <form th:action="@{/logout}" method="post" class="inline">
-                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </nav>
-    </header>
+       <div th:replace="~{fragments/header :: header}"></div>
+
 
     <!-- Main Content -->
     <main class="container mx-auto p-8 flex-grow">

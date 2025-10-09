@@ -10,26 +10,8 @@
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-    <header class="bg-white shadow-md">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="text-2xl font-bold text-gray-800">
-                    <a th:href="@{/admin/home}">NotifyCommute Admin</a>
-                </div>
-                <div class="flex items-center space-x-6">
-                    <a th:href="@{/admin/home}" class="text-gray-600 hover:text-blue-600">Home</a>
-                    <a th:href="@{/admin/announcement}" class="text-gray-600 hover:text-blue-600">Announcements</a>
-                    <a th:href="@{/admin/alert-types}" class="text-gray-600 hover:text-blue-600">Alert Types</a>
-                    <a th:href="@{/admin/logs}" class="text-gray-600 hover:text-blue-600">Logs</a>
-                    <form th:action="@{/logout}" method="post" class="inline">
-                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </nav>
-    </header>
+       <div th:replace="~{fragments/header :: header}"></div>
+
 
     <main class="container mx-auto p-8 flex-grow">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
@@ -44,8 +26,8 @@
                 <p class="text-gray-600">Add, edit, or remove notification categories.</p>
             </a>
             <a th:href="@{/admin/logs}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                <h2 class="text-xl font-bold text-gray-900 mb-2">View Logs</h2>
-                <p class="text-gray-600">Check the delivery status of sent announcements.</p>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">View Analytics</h2>
+                <p class="text-gray-600">Check the delivery status and analytics of sent announcements.</p>
             </a>
         </div>
     </main>

@@ -10,29 +10,9 @@
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-    <!-- Header -->
-    <header class="bg-white shadow-md">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="text-2xl font-bold text-gray-800">
-                    <a th:href="@{/admin/home}">NotifyCommute Admin</a>
-                </div>
-                <div class="flex items-center space-x-6">
-                    <a th:href="@{/admin/home}" class="text-gray-600 hover:text-blue-600">Home</a>
-                    <a th:href="@{/admin/announcement}" class="text-gray-600 hover:text-blue-600">Announcements</a>
-                    <a th:href="@{/admin/alert-types}" class="text-gray-600 hover:text-blue-600">Alert Types</a>
-                    <a th:href="@{/admin/logs}" class="text-gray-600 hover:text-blue-600">Logs</a>
-                    <form th:action="@{/logout}" method="post" class="inline">
-                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                            Logout
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </nav>
-    </header>
+        <div th:replace="~{fragments/header :: header}"></div>
 
-    <!-- Main Content -->
+
     <main class="container mx-auto p-8 flex-grow">
         <div class="w-full max-w-lg mx-auto bg-white p-8 rounded-xl shadow-lg">
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Create Commuter Announcement</h1>
@@ -45,7 +25,7 @@
                 <p th:text="${error}"></p>
             </div>
 
-            <form th:action="@{/admin/announcement}" method="post">
+            <form id="announcementForm" th:action="@{/admin/announcement}" method="post">
                 <div class="mb-5">
                     <label for="alertId" class="block mb-2 text-sm font-medium">Alert Type</label>
                     <select id="alertId" name="alertId" class="bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5" required>
@@ -57,6 +37,14 @@
                     <label for="message" class="block mb-2 text-sm font-medium">Message Content</label>
                     <textarea id="message" name="message" rows="4" class="block p-2.5 w-full text-sm rounded-lg border border-gray-300" placeholder="e.g., LRT-1 service is temporarily suspended..." required></textarea>
                 </div>
+                <div class="mb-6">
+                    <label for="scheduleTime" class="block mb-2 text-sm font-medium">Schedule (optional)</label>
+                    <input type="datetime-local" id="scheduleTime" name="scheduleTime" class="bg-gray-50 border border-gray-300 text-sm rounded-lg block w-full p-2.5">
+                    <div id="scheduleWarning" class="hidden mt-2 text-sm text-yellow-700 p-3 bg-yellow-100 rounded-lg">
+                        <strong>Warning:</strong> Scheduled announcements cannot be edited or deleted within
+                        <strong th:text="${lockoutPeriodText}">1 hour</strong> of their scheduled time.
+                    </div>
+                </div>
                 <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm w-full px-5 py-2.5 text-center">
                     Send Announcement
                 </button>
@@ -64,14 +52,36 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-200 text-center text-sm py-4 mt-auto">
         <div class="container mx-auto">
             &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> Notification Microservice. All Rights Reserved.
         </div>
     </footer>
 
+    <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirm Announcement</h3>
+                <div class="mt-2 px-7 py-3 text-left">
+                    <p class="text-sm text-gray-500">Please review the details before sending:</p>
+                    <ul class="mt-2 space-y-2 text-sm">
+                        <li><strong>Type:</strong> <span id="confirmType"></span></li>
+                        <li><strong>Message:</strong> <span id="confirmMessage" class="break-words"></span></li>
+                        <li id="confirmScheduleLi" class="hidden"><strong>Scheduled for:</strong> <span id="confirmSchedule"></span></li>
+                    </ul>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="confirmButton" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-blue-700">
+                        Confirm & Send
+                    </button>
+                    <button id="cancelButton" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-auto ml-2 hover:bg-gray-300">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script th:src="@{/scripts/scripts.js}"></script>
 </body>
 </html>
-

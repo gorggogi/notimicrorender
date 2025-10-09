@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal; // <-- Import Principal
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +20,12 @@ public class NotificationController {
 
     @PostMapping("/notifications")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> createNotification(@RequestBody Map<String, Object> payload) {
+    // 1. Add 'Principal principal' to the method arguments
+    public ResponseEntity<String> createNotification(@RequestBody Map<String, Object> payload, Principal principal) {
         Long alertId = Long.valueOf(payload.get("alertId").toString());
         String message = (String) payload.get("message");
-        notificationService.createAndSendNotification(alertId, message);
+        // 2. Pass the principal object in the service call
+        notificationService.createAndSendNotification(alertId, message, principal);
         return ResponseEntity.ok("Notification sent successfully.");
     }
 
@@ -108,4 +111,3 @@ public class NotificationController {
         return ResponseEntity.ok("Notification sent to " + sentCount + " users");
     }
 }
-

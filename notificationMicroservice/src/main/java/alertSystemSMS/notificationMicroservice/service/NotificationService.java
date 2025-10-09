@@ -1,12 +1,23 @@
 package alertSystemSMS.notificationMicroservice.service;
 
 import alertSystemSMS.notificationMicroservice.model.AlertType;
+import alertSystemSMS.notificationMicroservice.model.Notification;
+import alertSystemSMS.notificationMicroservice.model.NotificationLog;
 import alertSystemSMS.notificationMicroservice.model.User;
 import alertSystemSMS.notificationMicroservice.model.UserPreferenceAlertType;
 import alertSystemSMS.notificationMicroservice.repository.AlertTypeRepository;
+import alertSystemSMS.notificationMicroservice.repository.NotificationLogRepository;
+import alertSystemSMS.notificationMicroservice.repository.NotificationRepository;
 import alertSystemSMS.notificationMicroservice.repository.UserPreferenceAlertTypeRepository;
 import alertSystemSMS.notificationMicroservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,13 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
@@ -35,6 +39,10 @@ public class NotificationService {
     private UserRepository userRepository;
     @Autowired
     private AlertTypeRepository alertTypeRepository;
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private NotificationLogRepository notificationLogRepository;
 
     @Value("${philsms.api.token}")
     private String apiToken;
@@ -44,25 +52,46 @@ public class NotificationService {
 
     private final String philSmsApiUrl = "https://app.philsms.com/api/v3/sms/send";
 
-    public void createAndSendNotification(Long alertId, String messageContent) {
+    public void createAndSendNotification(Long alertId, String messageContent, Principal principal) {
+        String sentBy = (principal != null) ? principal.getName() : "UNKNOWN";
+        executeSend(alertId, messageContent, sentBy);
+    }
+
+    public void createAndSendNotification(Long alertId, String messageContent, String sentBy) {
+        executeSend(alertId, messageContent, sentBy);
+    }
+
+    @Transactional
+    private void executeSend(Long alertId, String messageContent, String sentBy) {
         System.out.println("-----");
         System.out.println("Processing notification for alert ID: " + alertId);
+
+        AlertType alertType = alertTypeRepository.findById(alertId)
+                .orElseThrow(() -> new RuntimeException("Alert type with ID " + alertId + " not found."));
+        
+        Notification notification = new Notification();
+        notification.setAlertType(alertType);
+        notification.setMessageContent(messageContent);
+        notification.setSentBy(sentBy);
+        Notification savedNotification = notificationRepository.save(notification);
+
         List<UserPreferenceAlertType> subscriptions = userPreferenceRepository.findByAlertType_AlertIdAndIsEnabledTrue(alertId);
         if (subscriptions.isEmpty()) {
             System.out.println("No users are subscribed to this alert type. No SMS sent.");
             return;
         }
+
         System.out.println("Found " + subscriptions.size() + " subscribed user(s). Sending SMS...");
         for (UserPreferenceAlertType subscription : subscriptions) {
             User user = subscription.getUser();
             if (user != null && user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                sendSms(user.getUserPhoneNumber(), messageContent);
+                sendSms(user.getUserPhoneNumber(), messageContent, savedNotification);
             }
         }
         System.out.println("-----");
     }
 
-    private void sendSms(String recipientPhoneNumber, String messageContent) {
+    private void sendSms(String recipientPhoneNumber, String messageContent, Notification notification) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -80,18 +109,37 @@ public class NotificationService {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 System.out.println("SMS sent successfully to " + recipientPhoneNumber);
-                logSmsDeliveryStatus(recipientPhoneNumber, "SENT_TO_GATEWAY");
+                createLogEntry(recipientPhoneNumber, "SENT_TO_GATEWAY", notification);
             } else {
                 System.err.println("Failed to send SMS to " + recipientPhoneNumber + ". Status: " + response.getStatusCode());
-                logSmsDeliveryStatus(recipientPhoneNumber, "FAILED");
+                createLogEntry(recipientPhoneNumber, "FAILED", notification);
             }
         } catch (HttpClientErrorException e) {
             System.err.println("An error occurred while sending SMS to " + recipientPhoneNumber + ": " + e.getStatusCode() + " " + e.getResponseBodyAsString());
-            logSmsDeliveryStatus(recipientPhoneNumber, "ERROR");
+            createLogEntry(recipientPhoneNumber, "ERROR", notification);
         } catch (Exception e) {
             System.err.println("An unexpected error occurred while sending SMS to " + recipientPhoneNumber + ": " + e.getMessage());
-            logSmsDeliveryStatus(recipientPhoneNumber, "ERROR");
+            createLogEntry(recipientPhoneNumber, "ERROR", notification);
         }
+    }
+
+    private void createLogEntry(String recipient, String status, Notification notification) {
+        if (notification == null) {
+            return;
+        }
+        NotificationLog log = new NotificationLog();
+        log.setNotification(notification);
+        log.setStatus(status);
+        log.setSentTo(recipient);
+        notificationLogRepository.save(log);
+    }
+    
+    public void logSmsDeliveryStatus(String messageSid, String status) {
+        System.out.println("-----");
+        System.out.println("Received delivery status update for Message SID: " + messageSid);
+        System.out.println("New Status: " + status);
+        System.out.println("Status logged to console (not saved to DB).");
+        System.out.println("-----");
     }
 
     private String formatPhoneNumber(String number) {
@@ -125,14 +173,6 @@ public class NotificationService {
         }
     }
 
-    public void logSmsDeliveryStatus(String messageSid, String status) {
-        System.out.println("-----");
-        System.out.println("Received delivery status update for Message SID: " + messageSid);
-        System.out.println("New Status: " + status);
-        System.out.println("Status logged.");
-        System.out.println("-----");
-    }
-
     public boolean getUserPreference(Long userId, Long alertId) {
         UserPreferenceAlertType.UserPreferencePK pk = new UserPreferenceAlertType.UserPreferencePK(userId, alertId);
         Optional<UserPreferenceAlertType> preferenceOpt = userPreferenceRepository.findById(pk);
@@ -162,16 +202,12 @@ public class NotificationService {
         return responseList;
     }
 
-    /**
-     * Send notification to a specific user by userId
-     * Used by other microservices (e.g., payment service sending receipt)
-     */
     public boolean sendNotificationToUser(Long userId, String content) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                sendSms(user.getUserPhoneNumber(), content);
+                sendSms(user.getUserPhoneNumber(), content, null);
                 System.out.println("Notification sent to user " + userId + ": " + content);
                 return true;
             } else {
@@ -184,10 +220,6 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Send notification to all users
-     * Used by other microservices for system-wide announcements
-     */
     public int sendNotificationToAllUsers(String content) {
         List<User> allUsers = userRepository.findAll();
         int sentCount = 0;
@@ -195,7 +227,7 @@ public class NotificationService {
         System.out.println("Sending notification to all users: " + content);
         for (User user : allUsers) {
             if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                sendSms(user.getUserPhoneNumber(), content);
+                sendSms(user.getUserPhoneNumber(), content, null);
                 sentCount++;
             }
         }
@@ -204,4 +236,3 @@ public class NotificationService {
         return sentCount;
     }
 }
-

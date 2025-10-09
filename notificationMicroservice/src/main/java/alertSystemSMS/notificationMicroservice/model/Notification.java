@@ -22,6 +22,9 @@ public class Notification {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
 
+    @Column(name = "sentBy")
+    private String sentBy;
+
     public Notification() {}
 
     public Long getNotificationId() { return notificationId; }
@@ -32,5 +35,11 @@ public class Notification {
     public void setMessageContent(String messageContent) { this.messageContent = messageContent; }
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-}
+    public String getSentBy() {
+        return sentBy;
+    }
 
+    public void setSentBy(String sentBy) {
+        this.sentBy = sentBy;
+    }
+}
