@@ -12,7 +12,8 @@ public class Notification {
     private Long notificationId;
 
     @ManyToOne
-    @JoinColumn(name = "alertId", nullable = false)
+    // Change this line
+    @JoinColumn(name = "alertId", nullable = true) // <-- Set nullable to true
     private AlertType alertType;
 
     @Column(name = "MessageContent", columnDefinition = "TEXT", nullable = false)

@@ -30,7 +30,8 @@
                     <tr th:each="announcement : ${announcements}" class="bg-white border-b">
                         <td class="px-6 py-4" th:text="${#dates.format(announcement.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
                         <td class="px-6 py-4" th:text="${announcement.messageContent}"></td>
-                        <td class="px-6 py-4" th:text="${announcement.alertType.alertName}"></td>
+                        <!-- This is the line that has been fixed -->
+                        <td class="px-6 py-4" th:text="${announcement.alertType != null ? announcement.alertType.alertName : 'Direct Message'}"></td>
                         <td class="px-6 py-4" th:text="${announcement.sentBy}"></td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(announcements)}">

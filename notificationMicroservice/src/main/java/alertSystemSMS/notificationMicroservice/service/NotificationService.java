@@ -122,6 +122,14 @@ public class NotificationService {
             createLogEntry(recipientPhoneNumber, "ERROR", notification);
         }
     }
+    
+    public void sendDirectSms(String phoneNumber, String messageContent, String sentBy) {
+        Notification notification = new Notification();
+        notification.setMessageContent(messageContent);
+        notification.setSentBy(sentBy);
+        Notification savedNotification = notificationRepository.save(notification);
+        sendSms(phoneNumber, messageContent, savedNotification);
+    }
 
     private void createLogEntry(String recipient, String status, Notification notification) {
         if (notification == null) {
