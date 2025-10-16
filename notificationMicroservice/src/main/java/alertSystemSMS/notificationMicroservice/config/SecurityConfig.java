@@ -27,17 +27,17 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-            // This chain applies to API endpoints
-            .securityMatcher("/api/v1/**", "/test/**")
-            .csrf(csrf -> csrf.disable())
+            // This chain now correctly applies ONLY to paths starting with /api/
+            .securityMatcher("/api/**")
+            .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
             .authorizeHttpRequests(authz -> authz
-                // Allow unauthenticated access to the direct send endpoint
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/send/direct")).permitAll()
+                // Allow unauthenticated access to the specific endpoints
+                .requestMatchers("/api/v1/send/direct", "/api/v1/alert-types", "/api/preferences/**", "/api/users/**").permitAll()
                 // All other API requests must be authenticated
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .httpBasic(withDefaults()); // Use HTTP Basic for other API calls (e.g., from Postman with auth)
+            .httpBasic(withDefaults()); // Use HTTP Basic authentication for other API calls
         return http.build();
     }
 
@@ -45,20 +45,15 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
+            // This chain applies to all other requests
             .authorizeHttpRequests(authz -> authz
-                // Allow access to static resources like CSS and JavaScript
-                .requestMatchers(
-                    AntPathRequestMatcher.antMatcher("/styles/**"),
-                    AntPathRequestMatcher.antMatcher("/scripts/**")
-                ).permitAll()
-                // Secure all admin pages
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/admin/**")).hasRole("ADMIN")
-                // All other requests must be authenticated
+                .requestMatchers("/styles/**", "/scripts/**").permitAll() // Allow static resources
+                .requestMatchers("/admin/**").hasRole("ADMIN") // Secure admin pages
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/admin/home", true) // Redirect to home after login
+                .defaultSuccessUrl("/admin/home", true)
                 .permitAll()
             )
             .logout(logout -> logout
@@ -79,4 +74,3 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(admin);
     }
 }
-
