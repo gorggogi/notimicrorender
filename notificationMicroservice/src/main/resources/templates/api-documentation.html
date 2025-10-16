@@ -9,10 +9,14 @@
     <link rel="stylesheet" th:href="@{/styles/styles.css}">
     <style>
         .api-endpoint {
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid #3b82f6; /* Blue for public APIs */
         }
         .api-endpoint-admin {
-            border-left: 4px solid #f59e0b;
+            border-left: 4px solid #f59e0b; /* Amber for admin/secured APIs */
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -22,32 +26,9 @@
 
     <main class="container mx-auto p-8 flex-grow">
         <h1 class="text-3xl font-bold text-gray-800 mb-4">API Documentation</h1>
-        <p class="text-gray-600 mb-8">API endpoints for interacting with the Notification Microservice.</p>
+        <p class="text-gray-600 mb-8">This documentation outlines the public API endpoints for the Notification Microservice. These endpoints are designed for inter-service communication and do not require authentication.</p>
 
         <div class="space-y-8">
-
-             <!-- Send Announcement by Alert Type -->
-            <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint-admin">
-                <h2 class="text-xl font-bold text-gray-800">Send Announcement by Alert Type</h2>
-                <div class="flex items-center mt-2">
-                    <span class="bg-blue-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">POST</span>
-                    <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/notifications</code>
-                    <span class="bg-amber-500 text-white text-xs font-bold ml-2 px-2.5 py-0.5 rounded-full">ADMIN ONLY</span>
-                </div>
-                <p class="mt-4 text-gray-700">Sends an SMS to all users subscribed to a specific alert type. Requires admin authentication.</p>
-
-                <h3 class="font-bold mt-4">Request Body (JSON)</h3>
-                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
-    "alertId": 1,
-    "message": "This is a broadcast for a specific alert type."
-}</code></pre>
-
-                <h3 class="font-bold mt-4">Responses</h3>
-                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
-                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: If the message is successfully queued for sending.</li>
-                    <li><code class="bg-red-100 text-red-800 p-1 rounded">403 Forbidden</code>: If the request is not made by an admin.</li>
-                </ul>
-            </div>
 
             <!-- Send Direct SMS -->
             <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
@@ -56,21 +37,96 @@
                     <span class="bg-blue-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">POST</span>
                     <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/send/direct</code>
                 </div>
-                <p class="mt-4 text-gray-700">Sends a direct SMS to a specified phone number. This does not require an alert type and is not tied to any user subscription.</p>
+                <p class="mt-4 text-gray-700">Sends a direct SMS to a specified phone number. Ideal for transactional messages like order confirmations or one-time passcodes.</p>
                 
                 <h3 class="font-bold mt-4">Request Body (JSON)</h3>
                 <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
     "phoneNumber": "09171234567",
-    "message": "This is a test message from the API."
+    "message": "Your verification code is 123456."
 }</code></pre>
 
                 <h3 class="font-bold mt-4">Responses</h3>
                 <ul class="list-disc list-inside mt-2 text-sm space-y-1">
                     <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: If the message is successfully sent.</li>
-                    <li><code class="bg-red-100 text-red-800 p-1 rounded">400 Bad Request</code>: If `phoneNumber` or `message` is missing.</li>
+                    <li><code class="bg-red-100 text-red-800 p-1 rounded">400 Bad Request</code>: If `phoneNumber` or `message` is missing or empty.</li>
                 </ul>
             </div>
 
+            <!-- Get User Preferences by User ID -->
+            <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
+                <h2 class="text-xl font-bold text-gray-800">Get User Preferences by User ID</h2>
+                 <div class="flex items-center mt-2">
+                    <span class="bg-green-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">GET</span>
+                    <code class="text-sm bg-gray-200 p-1 rounded">/api/preferences/user/{userId}</code>
+                </div>
+                <p class="mt-4 text-gray-700">Retrieves a user's alert type preferences using their internal user ID. This allows other services to know which notifications a user is subscribed to.</p>
+
+                <h3 class="font-bold mt-4">Responses</h3>
+                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: Returns a JSON object with the user's details and a list of their alert preferences.</li>
+                    <li><code class="bg-red-100 text-red-800 p-1 rounded">404 Not Found</code>: If the user ID does not exist in the database.</li>
+                </ul>
+                <h3 class="font-bold mt-4">Example Response Body (JSON)</h3>
+                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
+    "userId": 1,
+    "email": "user@example.com",
+    "alertTypes": [
+        {
+            "alertId": 1,
+            "alertName": "Weather Alert",
+            "alertDescription": "Receive notifications about severe weather...",
+            "enabled": true
+        },
+        {
+            "alertId": 2,
+            "alertName": "Emergency Alert",
+            "alertDescription": "Critical emergency notifications...",
+            "enabled": false
+        }
+    ]
+}</code></pre>
+            </div>
+            
+            <!-- Update User Preferences -->
+            <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
+                <h2 class="text-xl font-bold text-gray-800">Update User Preferences</h2>
+                <div class="flex items-center mt-2">
+                    <span class="bg-blue-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">POST</span>
+                    <code class="text-sm bg-gray-200 p-1 rounded">/api/preferences/{email}</code>
+                </div>
+                <p class="mt-4 text-gray-700">Updates a user's alert preferences based on their email. This endpoint completely replaces the user's existing preferences with the ones provided in the request.</p>
+
+                <h3 class="font-bold mt-4">Request Body (JSON)</h3>
+                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
+    "alertTypes": [
+        { "alertId": 1, "enabled": true },
+        { "alertId": 2, "enabled": false },
+        { "alertId": 3, "enabled": true }
+    ]
+}</code></pre>
+                <h3 class="font-bold mt-4">Responses</h3>
+                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: If preferences are updated successfully.</li>
+                    <li><code class="bg-red-100 text-red-800 p-1 rounded">404 Not Found</code>: If no user is found with the provided email.</li>
+                </ul>
+            </div>
+
+
+            <!-- Get All Alert Types -->
+            <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
+                <h2 class="text-xl font-bold text-gray-800">Get All Alert Types</h2>
+                 <div class="flex items-center mt-2">
+                    <span class="bg-green-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">GET</span>
+                    <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/alert-types</code>
+                </div>
+                <p class="mt-4 text-gray-700">Retrieves a list of all available alert types. This is useful for front-end applications that need to display subscription options to users.</p>
+
+                <h3 class="font-bold mt-4">Responses</h3>
+                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: Returns a JSON array of alert type objects.</li>
+                </ul>
+            </div>
+            
             <!-- Send to Specific User -->
             <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
                 <h2 class="text-xl font-bold text-gray-800">Send Notification to Specific User</h2>
@@ -78,11 +134,11 @@
                     <span class="bg-blue-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">POST</span>
                     <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/send/user/{userId}</code>
                 </div>
-                <p class="mt-4 text-gray-700">Sends an SMS to a single user identified by their user ID.</p>
+                <p class="mt-4 text-gray-700">Sends an SMS to a single user identified by their user ID. This is a generic endpoint for sending messages that are not tied to a specific alert type.</p>
                 
                 <h3 class="font-bold mt-4">Request Body (JSON)</h3>
                 <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
-    "content": "Your package has been shipped."
+    "content": "Your package has been shipped and will arrive tomorrow."
 }</code></pre>
 
                 <h3 class="font-bold mt-4">Responses</h3>
@@ -94,61 +150,25 @@
 
             <!-- Send to All Users -->
             <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
-                <h2 class="text-xl font-bold text-gray-800">Send Notification to All Users</h2>
+                <h2 class="text-xl font-bold text-gray-800">Broadcast to All Users</h2>
                 <div class="flex items-center mt-2">
                     <span class="bg-blue-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">POST</span>
                     <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/send/all</code>
                 </div>
-                <p class="mt-4 text-gray-700">Broadcasts an SMS to every user in the database who has a registered phone number.</p>
+                <p class="mt-4 text-gray-700">Broadcasts a generic SMS to every user in the database who has a registered phone number. This should be used with caution.</p>
                 
                 <h3 class="font-bold mt-4">Request Body (JSON)</h3>
                 <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
-    "content": "System maintenance will occur tonight at midnight."
+    "content": "System-wide announcement: The service will be down for maintenance tonight at 2 AM."
 }</code></pre>
 
                 <h3 class="font-bold mt-4">Responses</h3>
                 <ul class="list-disc list-inside mt-2 text-sm space-y-1">
-                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: Returns a confirmation with the count of users the message was sent to.</li>
+                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: Returns a confirmation with a count of users the message was sent to.</li>
                     <li><code class="bg-red-100 text-red-800 p-1 rounded">400 Bad Request</code>: If `content` is missing.</li>
                 </ul>
             </div>
 
-
-            <!-- Get Alert Types -->
-            <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
-                <h2 class="text-xl font-bold text-gray-800">Get All Alert Types</h2>
-                 <div class="flex items-center mt-2">
-                    <span class="bg-green-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">GET</span>
-                    <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/alert-types</code>
-                </div>
-                <p class="mt-4 text-gray-700">Retrieves a list of all available alert types that users can subscribe to.</p>
-
-                <h3 class="font-bold mt-4">Responses</h3>
-                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
-                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: Returns a JSON array of alert type objects.</li>
-                </ul>
-            </div>
-            
-            <!-- Update User Alert Preference -->
-            <div class="bg-white p-6 rounded-xl shadow-lg api-endpoint">
-                <h2 class="text-xl font-bold text-gray-800">Update User Alert Preference</h2>
-                <div class="flex items-center mt-2">
-                    <span class="bg-blue-500 text-white text-xs font-bold mr-2 px-2.5 py-0.5 rounded-full">POST</span>
-                    <code class="text-sm bg-gray-200 p-1 rounded">/api/v1/users/{userId}/preferences</code>
-                </div>
-                <p class="mt-4 text-gray-700">Sets the preference for a single alert type for a specific user. This is used to subscribe or unsubscribe a user from an alert category.</p>
-
-                <h3 class="font-bold mt-4">Request Body (JSON)</h3>
-                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>{
-    "alertId": 1,
-    "isEnabled": true
-}</code></pre>
-
-                <h3 class="font-bold mt-4">Responses</h3>
-                <ul class="list-disc list-inside mt-2 text-sm space-y-1">
-                    <li><code class="bg-green-100 text-green-800 p-1 rounded">200 OK</code>: If the preference is updated successfully.</li>
-                </ul>
-            </div>
         </div>
     </main>
 
