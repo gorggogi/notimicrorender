@@ -131,6 +131,22 @@ public class NotificationService {
         sendSms(phoneNumber, messageContent, savedNotification);
     }
 
+    /**
+     * Sends a direct SMS from the admin interface.
+     * This is kept separate from the public API for clarity and future flexibility.
+     */
+    public void sendDirectSmsFromAdmin(String phoneNumber, String messageContent, String sentBy) {
+        Notification notification = new Notification();
+        // This message is not associated with a specific alert type, so it's null.
+        notification.setAlertType(null);
+        notification.setMessageContent(messageContent);
+        notification.setSentBy(sentBy);
+        Notification savedNotification = notificationRepository.save(notification);
+        
+        // Use the existing private method to send the SMS
+        sendSms(phoneNumber, messageContent, savedNotification);
+    }
+
     private void createLogEntry(String recipient, String status, Notification notification) {
         if (notification == null) {
             return;

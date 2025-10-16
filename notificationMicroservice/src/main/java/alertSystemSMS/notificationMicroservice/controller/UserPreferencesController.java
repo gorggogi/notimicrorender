@@ -26,7 +26,7 @@ public class UserPreferencesController {
     private final AlertTypeRepository alertTypeRepository;
     private final UserPreferenceAlertTypeRepository preferenceRepository;
 
-    public UserPreferencesController(UserRepository userRepository, 
+    public UserPreferencesController(UserRepository userRepository,
                                    AlertTypeRepository alertTypeRepository,
                                    UserPreferenceAlertTypeRepository preferenceRepository) {
         this.userRepository = userRepository;
@@ -34,16 +34,34 @@ public class UserPreferencesController {
         this.preferenceRepository = preferenceRepository;
     }
 
+    /**
+     * API endpoint to get user preferences by email.
+     * Useful for front-end applications where email is the primary identifier.
+     */
     @GetMapping("/{email}")
-    public ResponseEntity<?> getUserPreferences(@PathVariable String email) {
-        logger.info("Getting preferences for user: {}", email);
-        
+    public ResponseEntity<?> getUserPreferencesByEmail(@PathVariable String email) {
+        logger.info("API: Getting preferences for user by email: {}", email);
         Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        return userOpt.map(this::buildPreferencesResponse)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
-        User user = userOpt.get();
+    /**
+     * NEW API endpoint to get user preferences by userId.
+     * Useful for inter-service communication where internal IDs are used.
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserPreferencesByUserId(@PathVariable Long userId) {
+        logger.info("API: Getting preferences for user by ID: {}", userId);
+        Optional<User> userOpt = userRepository.findById(userId);
+        return userOpt.map(this::buildPreferencesResponse)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    
+    /**
+     * Helper method to build the common JSON response for preferences.
+     */
+    private ResponseEntity<Map<String, Object>> buildPreferencesResponse(User user) {
         List<AlertType> allAlertTypes = alertTypeRepository.findAll();
         List<UserPreferenceAlertType> userPreferences = preferenceRepository.findByUser_UserId(user.getUserId());
 
@@ -60,15 +78,17 @@ public class UserPreferencesController {
             ));
         }
 
+        // The fix is here: handle the possibility of a null email.
         return ResponseEntity.ok(Map.of(
             "userId", user.getUserId(),
-            "email", user.getEmail(),
+            "email", user.getEmail() != null ? user.getEmail() : "",
             "alertTypes", result
         ));
     }
 
+
     @PostMapping("/{email}")
-    public ResponseEntity<?> updateUserPreferences(@PathVariable String email, 
+    public ResponseEntity<?> updateUserPreferences(@PathVariable String email,
                                                   @RequestBody Map<String, Object> preferences) {
         logger.info("Updating preferences for user: {}", email);
         
@@ -111,3 +131,4 @@ public class UserPreferencesController {
         }
     }
 }
+

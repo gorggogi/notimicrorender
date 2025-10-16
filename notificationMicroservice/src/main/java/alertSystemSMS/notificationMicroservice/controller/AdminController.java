@@ -181,7 +181,8 @@ public class AdminController {
         }
         try {
             String sentBy = principal != null ? principal.getName() : "admin";
-            notificationService.sendDirectSms(phoneNumber, message, sentBy);
+            // Updated to call the new admin-specific method
+            notificationService.sendDirectSmsFromAdmin(phoneNumber, message, sentBy);
             redirectAttributes.addFlashAttribute("success", "Message sent successfully to " + phoneNumber);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to send message: " + e.getMessage());

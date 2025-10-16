@@ -16,7 +16,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration
 @EnableWebSecurity
@@ -27,17 +27,15 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-            // This chain now correctly applies ONLY to paths starting with /api/
+            // This security chain now correctly applies ONLY to paths starting with /api/
             .securityMatcher("/api/**")
             .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
             .authorizeHttpRequests(authz -> authz
-                // Allow unauthenticated access to the specific endpoints
-                .requestMatchers("/api/v1/send/direct", "/api/v1/alert-types", "/api/preferences/**", "/api/users/**").permitAll()
-                // All other API requests must be authenticated
-                .anyRequest().authenticated()
+                // --- PUBLIC API ENDPOINTS ---
+                // Any request under the /api/ path will be permitted without authentication.
+                .anyRequest().permitAll()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .httpBasic(withDefaults()); // Use HTTP Basic authentication for other API calls
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
@@ -45,10 +43,10 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
-            // This chain applies to all other requests
+            // This chain applies to all other requests (non-API)
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/styles/**", "/scripts/**").permitAll() // Allow static resources
-                .requestMatchers("/admin/**").hasRole("ADMIN") // Secure admin pages
+                .requestMatchers("/styles/**", "/scripts/**", "/login").permitAll() // Allow static resources and login page
+                .requestMatchers("/admin/**").hasRole("ADMIN") // Secure all admin pages
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
