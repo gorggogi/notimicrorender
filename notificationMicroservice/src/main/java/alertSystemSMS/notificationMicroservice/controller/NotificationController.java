@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal; // <-- Import Principal
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,27 +20,19 @@ public class NotificationController {
 
     @PostMapping("/notifications")
     @PreAuthorize("hasRole('ADMIN')")
-    // 1. Add 'Principal principal' to the method arguments
     public ResponseEntity<String> createNotification(@RequestBody Map<String, Object> payload, Principal principal) {
         Long alertId = Long.valueOf(payload.get("alertId").toString());
         String message = (String) payload.get("message");
-        // 2. Pass the principal object in the service call
         notificationService.createAndSendNotification(alertId, message, principal);
         return ResponseEntity.ok("Notification sent successfully.");
     }
 
-    /**
-     * GET endpoint to retrieve all alert types and the user's subscription status for each.
-     */
     @GetMapping("/users/{userId}/preferences")
     public ResponseEntity<List<Map<String, Object>>> getAllUserPreferences(@PathVariable Long userId) {
         List<Map<String, Object>> preferences = notificationService.getAllUserPreferences(userId);
         return ResponseEntity.ok(preferences);
     }
 
-    /**
-     * GET endpoint to check a user's subscription status for a single, specific alert.
-     */
     @GetMapping("/users/{userId}/preferences/{alertId}")
     public ResponseEntity<Map<String, Boolean>> getUserPreference(
             @PathVariable Long userId,
@@ -54,9 +46,6 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * POST endpoint to update a user's subscription preference for a single alert.
-     */
     @PostMapping("/users/{userId}/preferences")
     public ResponseEntity<String> setUserPreference(
         @PathVariable Long userId,
@@ -75,10 +64,6 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * API for other microservices to send notification to a specific user
-     * Example: Payment microservice sending receipt notification
-     */
     @PostMapping("/send/user/{userId}")
     public ResponseEntity<String> sendNotificationToUser(
             @PathVariable Long userId,
@@ -96,10 +81,6 @@ public class NotificationController {
         }
     }
 
-    /**
-     * API for other microservices to send notification to all users
-     * Example: System maintenance announcement
-     */
     @PostMapping("/send/all")
     public ResponseEntity<String> sendNotificationToAllUsers(@RequestBody Map<String, String> payload) {
         String content = payload.get("content");
@@ -109,5 +90,20 @@ public class NotificationController {
         
         int sentCount = notificationService.sendNotificationToAllUsers(content);
         return ResponseEntity.ok("Notification sent to " + sentCount + " users");
+    }
+
+    /**
+     * API for sending a direct message to a phone number.
+     */
+    @PostMapping("/send/direct")
+    public ResponseEntity<String> sendDirectNotification(@RequestBody Map<String, String> payload, Principal principal) {
+        String phoneNumber = payload.get("phoneNumber");
+        String message = payload.get("message");
+        if (phoneNumber == null || phoneNumber.trim().isEmpty() || message == null || message.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Phone number and message are required");
+        }
+        String sentBy = principal != null ? principal.getName() : "API";
+        notificationService.sendDirectSms(phoneNumber, message, sentBy);
+        return ResponseEntity.ok("Notification sent successfully to " + phoneNumber);
     }
 }

@@ -13,12 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -37,14 +34,12 @@ public class AdminController {
     @Autowired
     private ScheduledNotificationRepository scheduledNotificationRepository;
 
-    // UPDATED: Changed to 15 minutes and renamed for clarity
     private static final long LOCKOUT_PERIOD_MILLIS = TimeUnit.MINUTES.toMillis(15);
     private static final String LOCKOUT_PERIOD_TEXT = "15 minutes";
 
     @GetMapping("/announcement")
     public String showAnnouncementForm(Model model) {
         model.addAttribute("alertTypes", alertTypeService.findAllAlertTypes());
-        // NEW: Pass the lockout time text to the frontend
         model.addAttribute("lockoutPeriodText", LOCKOUT_PERIOD_TEXT);
         return "announcement-form";
     }
@@ -94,7 +89,7 @@ public class AdminController {
     public String showScheduledAnnouncements(Model model) {
         List<ScheduledNotification> scheduled = scheduledNotificationRepository.findAll();
         model.addAttribute("scheduledNotifications", scheduled);
-        model.addAttribute("lockoutPeriodMillis", LOCKOUT_PERIOD_MILLIS); // Pass this for dynamic locking
+        model.addAttribute("lockoutPeriodMillis", LOCKOUT_PERIOD_MILLIS);
         return "scheduled-announcements";
     }
 
@@ -103,7 +98,6 @@ public class AdminController {
         Optional<ScheduledNotification> optionalNotification = scheduledNotificationRepository.findById(id);
         if (optionalNotification.isPresent()) {
             ScheduledNotification notification = optionalNotification.get();
-            // Using the constant for the check
             if (notification.getScheduleTime().getTime() - System.currentTimeMillis() < LOCKOUT_PERIOD_MILLIS) {
                 redirectAttributes.addFlashAttribute("error", "Cannot edit an announcement that is scheduled for less than " + LOCKOUT_PERIOD_TEXT + " from now.");
                 return "redirect:/admin/scheduled-announcements";
@@ -169,5 +163,29 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Scheduled announcement not found.");
         }
         return "redirect:/admin/scheduled-announcements";
+    }
+
+    @GetMapping("/direct-message")
+    public String showDirectMessageForm() {
+        return "direct-message-form";
+    }
+
+    @PostMapping("/direct-message")
+    public String sendDirectMessage(@RequestParam String phoneNumber,
+                                    @RequestParam String message,
+                                    RedirectAttributes redirectAttributes,
+                                    Principal principal) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty() || message == null || message.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Phone number and message cannot be empty.");
+            return "redirect:/admin/direct-message";
+        }
+        try {
+            String sentBy = principal != null ? principal.getName() : "admin";
+            notificationService.sendDirectSms(phoneNumber, message, sentBy);
+            redirectAttributes.addFlashAttribute("success", "Message sent successfully to " + phoneNumber);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to send message: " + e.getMessage());
+        }
+        return "redirect:/admin/direct-message";
     }
 }

@@ -3,42 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | NotifyCommute</title>
+    <title>Admin Dashboard | Philippine Komyut</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/styles/styles.css}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .icon-bg {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen">
 
-       <div th:replace="~{fragments/header :: header}"></div>
-
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <main class="container mx-auto p-8 flex-grow">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
-        <p class="text-gray-600 mb-8">Welcome to the Notification Microservice control panel.</p>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+        <p class="text-gray-600 mb-8">Overview of the SMS Alert System.</p>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <!-- Total Announcements Card -->
+            <div class="stat-card p-6 flex items-center">
+                <div class="icon-bg bg-blue-100 text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.514C18.332 12.836 20 14.832 20 17c0 .828-.336 1.58-.878 2.122M12 12c0 .828-.336 1.58-.878 2.122M12 12a4.001 4.001 0 01-3.436 1.683M12 12V5.882" /></svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Announcements</p>
+                    <p class="text-2xl font-bold text-gray-900" th:text="${totalAnnouncements}">0</p>
+                </div>
+            </div>
+            <!-- Total Users Card -->
+            <div class="stat-card p-6 flex items-center">
+                <div class="icon-bg bg-green-100 text-green-600">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Users</p>
+                    <p class="text-2xl font-bold text-gray-900" th:text="${totalUsers}">0</p>
+                </div>
+            </div>
+            <!-- Successful Deliveries Card -->
+            <div class="stat-card p-6 flex items-center">
+                <div class="icon-bg bg-indigo-100 text-indigo-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Successful Deliveries</p>
+                    <p class="text-2xl font-bold text-gray-900" th:text="${successfulDeliveries}">0</p>
+                </div>
+            </div>
+            <!-- Scheduled Announcements Card -->
+            <div class="stat-card p-6 flex items-center">
+                <div class="icon-bg bg-yellow-100 text-yellow-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Scheduled</p>
+                    <p class="text-2xl font-bold text-gray-900" th:text="${scheduledCount}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Quick Actions</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <a th:href="@{/admin/announcement}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
                 <h2 class="text-xl font-bold text-gray-900 mb-2">Create Announcement</h2>
                 <p class="text-gray-600">Send a new SMS alert to subscribed commuters.</p>
             </a>
+            <a th:href="@{/admin/direct-message}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Send Direct Message</h2>
+                <p class="text-gray-600">Send a one-time SMS to a specific number.</p>
+            </a>
             <a th:href="@{/admin/alert-types}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
                 <h2 class="text-xl font-bold text-gray-900 mb-2">Manage Alert Types</h2>
                 <p class="text-gray-600">Add, edit, or remove notification categories.</p>
             </a>
-            <a th:href="@{/admin/logs}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+             <a th:href="@{/admin/analytics}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
                 <h2 class="text-xl font-bold text-gray-900 mb-2">View Analytics</h2>
                 <p class="text-gray-600">Check the delivery status and analytics of sent announcements.</p>
             </a>
         </div>
     </main>
 
-    <footer class="bg-gray-200 text-center text-sm py-4 mt-auto">
-        <div class="container mx-auto">
-            &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> Notification Microservice. All Rights Reserved.
-        </div>
-    </footer>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
     <script th:src="@{/scripts/scripts.js}"></script>
 </body>
 </html>
-

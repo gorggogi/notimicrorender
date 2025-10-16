@@ -1,10 +1,24 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log("Admin scripts loaded.");
 
+    // --- Logic to disable all form buttons on submit to prevent multiple requests ---
+    const allForms = document.querySelectorAll('form');
+    allForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            // Find all submit buttons within the submitted form that are not part of a modal
+            const submitButtons = form.querySelectorAll('button[type="submit"]:not(.modal-button)');
+            
+            submitButtons.forEach(button => {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+                button.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+        });
+    });
+
     // --- Logic for the confirmation modal on announcement-form.html ---
     const announcementForm = document.getElementById('announcementForm');
     
-    // Check if we are on the page with the announcement form
     if (announcementForm) {
         const modal = document.getElementById('confirmationModal');
         const confirmButton = document.getElementById('confirmButton');
@@ -12,27 +26,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const scheduleInput = document.getElementById('scheduleTime');
         const scheduleWarning = document.getElementById('scheduleWarning');
 
-        // Show/hide the schedule warning message
         if (scheduleInput) {
             scheduleInput.addEventListener('input', function() {
-                if (scheduleInput.value) {
-                    scheduleWarning.classList.remove('hidden');
-                } else {
-                    scheduleWarning.classList.add('hidden');
-                }
+                scheduleWarning.classList.toggle('hidden', !scheduleInput.value);
             });
         }
         
-        // Intercept form submission to show the modal
         announcementForm.addEventListener('submit', function (e) {
-            e.preventDefault(); // Stop form from submitting immediately
+            e.preventDefault();
             
             const alertSelect = document.getElementById('alertId');
             const alertType = alertSelect.options[alertSelect.selectedIndex].text;
             const message = document.getElementById('message').value;
             const scheduleTime = scheduleInput.value;
 
-            // Populate modal with form data
             document.getElementById('confirmType').textContent = alertType;
             document.getElementById('confirmMessage').textContent = message;
 
@@ -45,18 +52,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 confirmScheduleLi.classList.add('hidden');
             }
             
-            // Show the modal
             modal.classList.remove('hidden');
         });
         
-        // Handle confirm button click
         if (confirmButton) {
             confirmButton.addEventListener('click', function() {
-                announcementForm.submit(); // Submit the form
+                // Manually disable the modal button before submitting the form
+                confirmButton.disabled = true;
+                confirmButton.textContent = 'Sending...';
+                confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                announcementForm.submit();
             });
         }
 
-        // Handle cancel actions
         const hideModal = () => {
             if (modal) {
                 modal.classList.add('hidden');
@@ -69,12 +78,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (modal) {
             modal.addEventListener('click', function(e) {
-                // Hide modal if the background is clicked
                 if (e.target === modal) {
                     hideModal();
                 }
             });
         }
     }
-    // --- End of announcement-form.html logic ---
 });
