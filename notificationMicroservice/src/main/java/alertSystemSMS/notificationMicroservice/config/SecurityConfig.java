@@ -16,6 +16,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -25,13 +27,17 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/api/**", "/test/**")
+            // This chain applies to API endpoints
+            .securityMatcher("/api/v1/**", "/test/**")
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // For now, allow API access and test endpoints, but in production, you'd secure this
-                .anyRequest().permitAll()
-            );
+                // Allow unauthenticated access to the direct send endpoint
+                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/send/direct")).permitAll()
+                // All other API requests must be authenticated
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .httpBasic(withDefaults()); // Use HTTP Basic for other API calls (e.g., from Postman with auth)
         return http.build();
     }
 
@@ -73,4 +79,3 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(admin);
     }
 }
-
