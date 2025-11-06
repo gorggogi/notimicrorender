@@ -1,8 +1,10 @@
 package alertSystemSMS.notificationMicroservice.controller;
 
+import alertSystemSMS.notificationMicroservice.model.Notification;
 import alertSystemSMS.notificationMicroservice.model.ScheduledNotification;
 import alertSystemSMS.notificationMicroservice.service.AlertTypeService;
 import alertSystemSMS.notificationMicroservice.service.NotificationService;
+import alertSystemSMS.notificationMicroservice.service.SmsRoutingService;
 import alertSystemSMS.notificationMicroservice.repository.ScheduledNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,6 +35,9 @@ public class AdminController {
 
     @Autowired
     private ScheduledNotificationRepository scheduledNotificationRepository;
+
+    @Autowired
+    private SmsRoutingService smsRoutingService;
 
     private static final long LOCKOUT_PERIOD_MILLIS = TimeUnit.MINUTES.toMillis(15);
     private static final String LOCKOUT_PERIOD_TEXT = "15 minutes";
@@ -180,8 +185,13 @@ public class AdminController {
             return "redirect:/admin/direct-message";
         }
         try {
-            String sentBy = principal != null ? principal.getName() : "admin";
-            notificationService.sendDirectSms(phoneNumber, message, sentBy);
+            String sentBy = principal != null ? principal.getName() : "Admin";
+
+            // 1. Save the notification to the database in its own transaction
+            Notification savedNotification = notificationService.createAndLogDirectMessage(message, sentBy);
+
+            // 2. Send the SMS
+            smsRoutingService.sendSms(phoneNumber, message, savedNotification);
             redirectAttributes.addFlashAttribute("success", "Message sent successfully to " + phoneNumber);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to send message: " + e.getMessage());
