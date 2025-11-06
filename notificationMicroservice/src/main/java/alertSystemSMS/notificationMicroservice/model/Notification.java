@@ -13,7 +13,7 @@ public class Notification {
     private Long notificationId;
 
     @ManyToOne
-    // Change this line
+    @JoinColumn(name = "alertId", nullable = true)
     private AlertType alertType;
 
     @Column(name = "MessageContent", columnDefinition = "TEXT", nullable = false)

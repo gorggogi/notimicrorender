@@ -114,8 +114,6 @@ public class NotificationController {
         }
         String sentBy = principal != null ? principal.getName() : "API";
 
-        // Create and save a notification record for logging purposes.
-        // Direct messages do not have an AlertType.
         Notification notification = new Notification();
         notification.setMessageContent(message);
         notification.setSentBy(sentBy);
