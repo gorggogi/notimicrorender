@@ -2,6 +2,7 @@ package alertSystemSMS.notificationMicroservice.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "Notifications")
@@ -13,21 +14,19 @@ public class Notification {
 
     @ManyToOne
     // Change this line
-    @JoinColumn(name = "alertId", nullable = true) // <-- Set nullable to true
     private AlertType alertType;
 
     @Column(name = "MessageContent", columnDefinition = "TEXT", nullable = false)
     private String messageContent;
 
+    @CreationTimestamp
     @Column(name = "createdAt", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt = new Date();
+    private Date createdAt;
 
     @Column(name = "sentBy")
     private String sentBy;
 
     public Notification() {}
-
     public Long getNotificationId() { return notificationId; }
     public void setNotificationId(Long notificationId) { this.notificationId = notificationId; }
     public AlertType getAlertType() { return alertType; }

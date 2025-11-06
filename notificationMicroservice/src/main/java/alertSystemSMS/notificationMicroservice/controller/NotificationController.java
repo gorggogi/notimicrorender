@@ -31,6 +31,7 @@ public class NotificationController {
     @Autowired
     private AlertTypeRepository alertTypeRepository;
 
+
     @PostMapping("/notifications")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createNotification(@RequestBody Map<String, Object> payload, Principal principal) {
@@ -119,7 +120,7 @@ public class NotificationController {
 
         // Find the specific AlertType for 'Direct Message'
         AlertType directMessageAlertType = alertTypeRepository.findByAlertName("Direct Message")
-                .orElseThrow(() -> new RuntimeException("AlertType 'Direct Message' not found in database."));
+                .orElseThrow(() -> new RuntimeException("AlertType 'Direct Message' not found in database. Please add it."));
 
         // Create and save a notification record first for logging purposes
         Notification notification = new Notification();
