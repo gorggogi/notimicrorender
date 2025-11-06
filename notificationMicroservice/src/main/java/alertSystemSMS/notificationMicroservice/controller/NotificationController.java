@@ -1,7 +1,6 @@
 package alertSystemSMS.notificationMicroservice.controller;
 
 import alertSystemSMS.notificationMicroservice.model.Notification;
-import alertSystemSMS.notificationMicroservice.repository.NotificationRepository;
 import alertSystemSMS.notificationMicroservice.service.NotificationService;
 import alertSystemSMS.notificationMicroservice.service.SmsRoutingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +22,6 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @Autowired
-    private NotificationRepository notificationRepository;
 
 
 
@@ -114,11 +111,10 @@ public class NotificationController {
         }
         String sentBy = principal != null ? principal.getName() : "API";
 
-        Notification notification = new Notification();
-        notification.setMessageContent(message);
-        notification.setSentBy(sentBy);
-        Notification savedNotification = notificationRepository.save(notification);
+        // First, create the notification in a new, separate transaction to get a committed ID.
+        Notification savedNotification = notificationService.createAndLogDirectMessage(message, sentBy);
 
+        // Now, with a committed notification, proceed to send the SMS.
         smsRoutingService.sendSms(phoneNumber, message, savedNotification);
         return ResponseEntity.ok("Notification sent successfully to " + phoneNumber);
     }

@@ -2,15 +2,12 @@ package alertSystemSMS.notificationMicroservice.service;
 
 import alertSystemSMS.notificationMicroservice.model.AlertType;
 import alertSystemSMS.notificationMicroservice.model.Notification;
-import alertSystemSMS.notificationMicroservice.model.NotificationLog;
 import alertSystemSMS.notificationMicroservice.model.User;
 import alertSystemSMS.notificationMicroservice.model.UserPreferenceAlertType;
 import alertSystemSMS.notificationMicroservice.repository.AlertTypeRepository;
-import alertSystemSMS.notificationMicroservice.repository.NotificationLogRepository;
 import alertSystemSMS.notificationMicroservice.repository.NotificationRepository;
 import alertSystemSMS.notificationMicroservice.repository.UserPreferenceAlertTypeRepository;
 import alertSystemSMS.notificationMicroservice.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,24 +15,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationService {
 
-    @Autowired
-    private SmsRoutingService smsRoutingService;
-    @Autowired
-    private UserPreferenceAlertTypeRepository userPreferenceRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AlertTypeRepository alertTypeRepository;
-    @Autowired
-    private NotificationRepository notificationRepository;
-    @Autowired
-    private NotificationLogRepository notificationLogRepository;
+    private final UserPreferenceAlertTypeRepository userPreferenceRepository;
+    private final UserRepository userRepository;
+    private final AlertTypeRepository alertTypeRepository;
+    private final NotificationRepository notificationRepository;
+    private final SmsRoutingService smsRoutingService;
+
+    public NotificationService(UserPreferenceAlertTypeRepository userPreferenceRepository, UserRepository userRepository, AlertTypeRepository alertTypeRepository, NotificationRepository notificationRepository, SmsRoutingService smsRoutingService) {
+        this.userPreferenceRepository = userPreferenceRepository;
+        this.userRepository = userRepository;
+        this.alertTypeRepository = alertTypeRepository;
+        this.notificationRepository = notificationRepository;
+        this.smsRoutingService = smsRoutingService;
+    }
 
 
     public void createAndSendNotification(Long alertId, String messageContent, Principal principal) {
@@ -84,16 +84,6 @@ public class NotificationService {
         smsRoutingService.sendSms(phoneNumber, messageContent, null);
     }
 
-    private void createLogEntry(String recipient, String status, Notification notification) {
-        if (notification == null) {
-            return;
-        }
-        NotificationLog log = new NotificationLog();
-        log.setNotification(notification);
-        log.setStatus(status);
-        log.setSentTo(recipient);
-        notificationLogRepository.save(log);
-    }
     
     public void logSmsDeliveryStatus(String messageSid, String status) {
         System.out.println("-----");
@@ -173,6 +163,23 @@ public class NotificationService {
             System.err.println("User " + userId + " not found");
             return false;
         }
+    }
+
+
+
+    /**
+     * Creates and saves a Notification for a direct message in its own new transaction.
+     * This ensures the notification has a committed ID before any subsequent operations (like logging) reference it.
+     * @param message The message content.
+     * @param sentBy The sender.
+     * @return The saved Notification entity with a database-generated ID.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Notification createAndLogDirectMessage(String message, String sentBy) {
+        Notification notification = new Notification();
+        notification.setMessageContent(message);
+        notification.setSentBy(sentBy);
+        return notificationRepository.save(notification);
     }
 
     public int sendNotificationToAllUsers(String content) {
