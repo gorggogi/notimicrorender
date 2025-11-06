@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM maven:3.8.5-openjdk-17 AS build
+FROM eclipse-temurin:17-jdk-jammy AS builder
 
 # Set the working directory for the build stage
 WORKDIR /app
@@ -12,7 +12,7 @@ COPY notificationMicroservice/src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Create the final lightweight image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
