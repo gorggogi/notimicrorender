@@ -111,10 +111,19 @@ public class NotificationController {
         }
         String sentBy = principal != null ? principal.getName() : "API";
 
+        System.out.println("[CONTROLLER] Attempting to save notification in new transaction for message: " + message);
         // First, create the notification in a new, separate transaction to get a committed ID.
         Notification savedNotification = notificationService.createAndLogDirectMessage(message, sentBy);
 
+        if (savedNotification != null && savedNotification.getNotificationId() != null) {
+            System.out.println("[CONTROLLER] Returned from service. Notification has been committed with ID: " + savedNotification.getNotificationId());
+        } else {
+            System.out.println("[CONTROLLER] ERROR: Returned from service, but notification or its ID is null.");
+            return ResponseEntity.internalServerError().body("Failed to save notification before sending.");
+        }
+
         // Now, with a committed notification, proceed to send the SMS.
+        System.out.println("[CONTROLLER] Proceeding to send SMS for notification ID: " + savedNotification.getNotificationId());
         smsRoutingService.sendSms(phoneNumber, message, savedNotification);
         return ResponseEntity.ok("Notification sent successfully to " + phoneNumber);
     }

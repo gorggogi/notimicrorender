@@ -176,10 +176,19 @@ public class NotificationService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification createAndLogDirectMessage(String message, String sentBy) {
-        Notification notification = new Notification();
-        notification.setMessageContent(message);
-        notification.setSentBy(sentBy);
-        return notificationRepository.save(notification);
+        try {
+            System.out.println("[SERVICE] Inside createAndLogDirectMessage. About to save.");
+            Notification notification = new Notification();
+            notification.setMessageContent(message);
+            notification.setSentBy(sentBy);
+            Notification savedNotification = notificationRepository.save(notification);
+            System.out.println("[SERVICE] Save complete. Notification ID: " + savedNotification.getNotificationId());
+            return savedNotification;
+        } catch (Exception e) {
+            System.err.println("[SERVICE] CRITICAL ERROR inside createAndLogDirectMessage transaction: " + e.getMessage());
+            // Re-throw to ensure the transaction rolls back and the caller is aware of the failure.
+            throw e;
+        }
     }
 
     public int sendNotificationToAllUsers(String content) {
