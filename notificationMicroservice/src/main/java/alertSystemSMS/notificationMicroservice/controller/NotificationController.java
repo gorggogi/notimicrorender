@@ -1,8 +1,6 @@
 package alertSystemSMS.notificationMicroservice.controller;
 
 import alertSystemSMS.notificationMicroservice.model.Notification;
-import alertSystemSMS.notificationMicroservice.model.AlertType;
-import alertSystemSMS.notificationMicroservice.repository.AlertTypeRepository;
 import alertSystemSMS.notificationMicroservice.repository.NotificationRepository;
 import alertSystemSMS.notificationMicroservice.service.NotificationService;
 import alertSystemSMS.notificationMicroservice.service.SmsRoutingService;
@@ -28,8 +26,6 @@ public class NotificationController {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    @Autowired
-    private AlertTypeRepository alertTypeRepository;
 
 
     @PostMapping("/notifications")
@@ -118,13 +114,9 @@ public class NotificationController {
         }
         String sentBy = principal != null ? principal.getName() : "API";
 
-        // Find the specific AlertType for 'Direct Message'
-        AlertType directMessageAlertType = alertTypeRepository.findByAlertName("Direct Message")
-                .orElseThrow(() -> new RuntimeException("AlertType 'Direct Message' not found in database. Please add it."));
-
-        // Create and save a notification record first for logging purposes
+        // Create and save a notification record for logging purposes.
+        // Direct messages do not have an AlertType.
         Notification notification = new Notification();
-        notification.setAlertType(directMessageAlertType);
         notification.setMessageContent(message);
         notification.setSentBy(sentBy);
         Notification savedNotification = notificationRepository.save(notification);
