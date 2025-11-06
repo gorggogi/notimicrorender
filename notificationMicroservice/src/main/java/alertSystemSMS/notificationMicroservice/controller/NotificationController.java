@@ -1,6 +1,9 @@
 package alertSystemSMS.notificationMicroservice.controller;
 
+import alertSystemSMS.notificationMicroservice.model.Notification;
+import alertSystemSMS.notificationMicroservice.repository.NotificationRepository;
 import alertSystemSMS.notificationMicroservice.service.NotificationService;
+import alertSystemSMS.notificationMicroservice.service.SmsRoutingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,13 +13,18 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 @RestController
 @RequestMapping("/api/v1")
 public class NotificationController {
 
     @Autowired
+    private SmsRoutingService smsRoutingService;
+
+    @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @PostMapping("/notifications")
     @PreAuthorize("hasRole('ADMIN')")
@@ -103,7 +111,14 @@ public class NotificationController {
             return ResponseEntity.badRequest().body("Phone number and message are required");
         }
         String sentBy = principal != null ? principal.getName() : "API";
-        notificationService.sendDirectSms(phoneNumber, message, sentBy);
+
+        // Create and save a notification record first for logging purposes
+        Notification notification = new Notification();
+        notification.setMessageContent(message);
+        notification.setSentBy(sentBy);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        smsRoutingService.sendSms(phoneNumber, message, savedNotification);
         return ResponseEntity.ok("Notification sent successfully to " + phoneNumber);
     }
 }

@@ -19,20 +19,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 public class NotificationService {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private SmsRoutingService smsRoutingService;
     @Autowired
     private UserPreferenceAlertTypeRepository userPreferenceRepository;
     @Autowired
@@ -44,13 +37,6 @@ public class NotificationService {
     @Autowired
     private NotificationLogRepository notificationLogRepository;
 
-    @Value("${philsms.api.token}")
-    private String apiToken;
-
-    @Value("${philsms.sender.id}")
-    private String senderId;
-
-    private final String philSmsApiUrl = "https://app.philsms.com/api/v3/sms/send";
 
     public void createAndSendNotification(Long alertId, String messageContent, Principal principal) {
         String sentBy = (principal != null) ? principal.getName() : "UNKNOWN";
@@ -85,50 +71,17 @@ public class NotificationService {
         for (UserPreferenceAlertType subscription : subscriptions) {
             User user = subscription.getUser();
             if (user != null && user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                sendSms(user.getUserPhoneNumber(), messageContent, savedNotification);
+                smsRoutingService.sendSms(user.getUserPhoneNumber(), messageContent, savedNotification);
             }
         }
         System.out.println("-----");
     }
 
-    private void sendSms(String recipientPhoneNumber, String messageContent, Notification notification) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + apiToken);
-            headers.set("Accept", "application/json");
-
-            Map<String, String> body = new HashMap<>();
-            body.put("recipient", formatPhoneNumber(recipientPhoneNumber));
-            body.put("sender_id", senderId);
-            body.put("type", "plain");
-            body.put("message", messageContent);
-
-            HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(philSmsApiUrl, request, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("SMS sent successfully to " + recipientPhoneNumber);
-                createLogEntry(recipientPhoneNumber, "SENT_TO_GATEWAY", notification);
-            } else {
-                System.err.println("Failed to send SMS to " + recipientPhoneNumber + ". Status: " + response.getStatusCode());
-                createLogEntry(recipientPhoneNumber, "FAILED", notification);
-            }
-        } catch (HttpClientErrorException e) {
-            System.err.println("An error occurred while sending SMS to " + recipientPhoneNumber + ": " + e.getStatusCode() + " " + e.getResponseBodyAsString());
-            createLogEntry(recipientPhoneNumber, "ERROR", notification);
-        } catch (Exception e) {
-            System.err.println("An unexpected error occurred while sending SMS to " + recipientPhoneNumber + ": " + e.getMessage());
-            createLogEntry(recipientPhoneNumber, "ERROR", notification);
-        }
-    }
     
     public void sendDirectSms(String phoneNumber, String messageContent, String sentBy) {
-        Notification notification = new Notification();
-        notification.setMessageContent(messageContent);
-        notification.setSentBy(sentBy);
-        Notification savedNotification = notificationRepository.save(notification);
-        sendSms(phoneNumber, messageContent, savedNotification);
+        // This method is now effectively handled by SmsRoutingService and the controller.
+        // It can be kept for internal use or deprecated if the controller is the only entry point.
+        smsRoutingService.sendSms(phoneNumber, messageContent, null);
     }
 
     private void createLogEntry(String recipient, String status, Notification notification) {
@@ -150,12 +103,6 @@ public class NotificationService {
         System.out.println("-----");
     }
 
-    private String formatPhoneNumber(String number) {
-        if (number.startsWith("0")) {
-            return "63" + number.substring(1);
-        }
-        return number;
-    }
 
     @Transactional
     public void updateUserPreference(Long userId, Long alertId, boolean isEnabled) {
@@ -215,7 +162,7 @@ public class NotificationService {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                sendSms(user.getUserPhoneNumber(), content, null);
+                smsRoutingService.sendSms(user.getUserPhoneNumber(), content, null);
                 System.out.println("Notification sent to user " + userId + ": " + content);
                 return true;
             } else {
@@ -235,7 +182,7 @@ public class NotificationService {
         System.out.println("Sending notification to all users: " + content);
         for (User user : allUsers) {
             if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                sendSms(user.getUserPhoneNumber(), content, null);
+                smsRoutingService.sendSms(user.getUserPhoneNumber(), content, null);
                 sentCount++;
             }
         }
