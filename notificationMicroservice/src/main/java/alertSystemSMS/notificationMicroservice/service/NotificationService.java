@@ -16,12 +16,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     private final UserPreferenceAlertTypeRepository userPreferenceRepository;
     private final UserRepository userRepository;
@@ -177,15 +181,15 @@ public class NotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification createAndLogDirectMessage(String message, String sentBy) {
         try {
-            System.out.println("[SERVICE] Inside createAndLogDirectMessage. About to save.");
+            logger.info("[SERVICE] Inside createAndLogDirectMessage. About to save.");
             Notification notification = new Notification();
             notification.setMessageContent(message);
             notification.setSentBy(sentBy);
             Notification savedNotification = notificationRepository.save(notification);
-            System.out.println("[SERVICE] Save complete. Notification ID: " + savedNotification.getNotificationId());
+            logger.info("[SERVICE] Save complete. Notification ID: {}", savedNotification.getNotificationId());
             return savedNotification;
         } catch (Exception e) {
-            System.err.println("[SERVICE] CRITICAL ERROR inside createAndLogDirectMessage transaction: " + e.getMessage());
+            logger.error("[SERVICE] CRITICAL ERROR inside createAndLogDirectMessage transaction: {}", e.getMessage(), e);
             // Re-throw to ensure the transaction rolls back and the caller is aware of the failure.
             throw e;
         }

@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +18,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1")
 public class NotificationController {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
 
     @Autowired
     private SmsRoutingService smsRoutingService;
@@ -111,19 +116,19 @@ public class NotificationController {
         }
         String sentBy = principal != null ? principal.getName() : "API";
 
-        System.out.println("[CONTROLLER] Attempting to save notification in new transaction for message: " + message);
+        logger.info("[CONTROLLER] Attempting to save notification in new transaction for message: {}", message);
         // First, create the notification in a new, separate transaction to get a committed ID.
         Notification savedNotification = notificationService.createAndLogDirectMessage(message, sentBy);
 
         if (savedNotification != null && savedNotification.getNotificationId() != null) {
-            System.out.println("[CONTROLLER] Returned from service. Notification has been committed with ID: " + savedNotification.getNotificationId());
+            logger.info("[CONTROLLER] Returned from service. Notification has been committed with ID: {}", savedNotification.getNotificationId());
         } else {
-            System.out.println("[CONTROLLER] ERROR: Returned from service, but notification or its ID is null.");
+            logger.error("[CONTROLLER] ERROR: Returned from service, but notification or its ID is null.");
             return ResponseEntity.internalServerError().body("Failed to save notification before sending.");
         }
 
         // Now, with a committed notification, proceed to send the SMS.
-        System.out.println("[CONTROLLER] Proceeding to send SMS for notification ID: " + savedNotification.getNotificationId());
+        logger.info("[CONTROLLER] Proceeding to send SMS for notification ID: {}", savedNotification.getNotificationId());
         smsRoutingService.sendSms(phoneNumber, message, savedNotification);
         return ResponseEntity.ok("Notification sent successfully to " + phoneNumber);
     }
