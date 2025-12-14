@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS api_keys (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    api_key VARCHAR(255) NOT NULL UNIQUE,
+    client_name VARCHAR(255) NOT NULL,
+    created_date DATETIME NOT NULL,
+    active BOOLEAN NOT NULL
+);

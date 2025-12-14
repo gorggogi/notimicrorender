@@ -11,13 +11,13 @@ public class ApiKey {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "apiKey", nullable = false, unique = true)
     private String apiKey;
 
-    @Column(nullable = false)
+    @Column(name = "clientName", nullable = false)
     private String clientName;
 
-    @Column(nullable = false)
+    @Column(name = "createdDate", nullable = false)
     private LocalDateTime createdDate;
 
     private boolean active;
