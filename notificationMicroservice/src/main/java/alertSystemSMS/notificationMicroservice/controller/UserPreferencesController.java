@@ -34,11 +34,11 @@ public class UserPreferencesController {
         this.preferenceRepository = preferenceRepository;
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<?> getUserPreferences(@PathVariable String email) {
-        logger.info("Getting preferences for user: {}", email);
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUserPreferences(@PathVariable Long userId) {
+        logger.info("Getting preferences for user with ID: {}", userId);
         
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -67,12 +67,12 @@ public class UserPreferencesController {
         ));
     }
 
-    @PostMapping("/{email}")
-    public ResponseEntity<?> updateUserPreferences(@PathVariable String email, 
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> updateUserPreferences(@PathVariable Long userId, 
                                                   @RequestBody Map<String, Object> preferences) {
-        logger.info("Updating preferences for user: {}", email);
+        logger.info("Updating preferences for user with ID: {}", userId);
         
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -102,11 +102,11 @@ public class UserPreferencesController {
                 }
             }
 
-            logger.info("Successfully updated preferences for user: {}", email);
+            logger.info("Successfully updated preferences for user: {}", userId);
             return ResponseEntity.ok(Map.of("message", "Preferences updated successfully"));
             
         } catch (Exception e) {
-            logger.error("Error updating preferences for user: {}. Error: {}", email, e.getMessage(), e);
+            logger.error("Error updating preferences for user: {}. Error: {}", userId, e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of("error", "Failed to update preferences: " + e.getMessage()));
         }
     }
