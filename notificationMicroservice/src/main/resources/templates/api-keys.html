@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>API Key Management</title>
+    <link rel="stylesheet" th:href="@{/styles/main.css">
+</head>
+<body>
+<div class="container">
+    <h1>API Key Management</h1>
+
+    <div th:if="${success}" class="alert alert-success">
+        <p th:text="${success}"></p>
+        <div th:if="${generatedKey}">
+            <p><strong>Client:</strong> <span th:text="${clientName}"></span></p>
+            <p><strong>API Key:</strong> <code th:text="${generatedKey}"></code></p>
+            <p>Please copy this key now. You will not be able to see it again.</p>
+        </div>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div class="form-container">
+        <h2>Generate New API Key</h2>
+        <form th:action="@{/admin/generate-api-key}" method="post">
+            <div class="form-group">
+                <label for="clientName">Client Name:</label>
+                <input type="text" id="clientName" name="clientName" required>
+            </div>
+            <button type="submit" class="button">Generate Key</button>
+        </form>
+    </div>
+
+    <a th:href="@{/admin/home}" class="back-link">Back to Admin Home</a>
+</div>
+</body>
+</html>

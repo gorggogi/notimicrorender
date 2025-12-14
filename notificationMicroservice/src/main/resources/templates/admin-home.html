@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Home</title>
+    <link rel="stylesheet" th:href="@{/styles/main.css">
+</head>
+<body>
+<div class="container">
+    <h1>Admin Dashboard</h1>
+    <p>Welcome to the admin area. Please choose an action:</p>
+    <ul class="admin-links">
+        <li><a th:href="@{/admin/announcement}">Create Announcement</a></li>
+        <li><a th:href="@{/admin/scheduled-announcements}">View Scheduled Announcements</a></li>
+        <li><a th:href="@{/admin/direct-message}">Send Direct Message</a></li>
+        <li><a th:href="@{/admin/api-keys}">Manage API Keys</a></li>
+    </ul>
+    <form th:action="@{/logout}" method="post" class="logout-form">
+        <button type="submit" class="button">Logout</button>
+    </form>
+</div>
+</body>
+</html>

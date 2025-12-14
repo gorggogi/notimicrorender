@@ -1,11 +1,13 @@
 package alertSystemSMS.notificationMicroservice.controller;
 
+import alertSystemSMS.notificationMicroservice.model.ApiKey;
 import alertSystemSMS.notificationMicroservice.model.Notification;
 import alertSystemSMS.notificationMicroservice.model.ScheduledNotification;
+import alertSystemSMS.notificationMicroservice.repository.ScheduledNotificationRepository;
+import alertSystemSMS.notificationMicroservice.service.ApiKeyService;
 import alertSystemSMS.notificationMicroservice.service.AlertTypeService;
 import alertSystemSMS.notificationMicroservice.service.NotificationService;
 import alertSystemSMS.notificationMicroservice.service.SmsRoutingService;
-import alertSystemSMS.notificationMicroservice.repository.ScheduledNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,8 +42,16 @@ public class AdminController {
     @Autowired
     private SmsRoutingService smsRoutingService;
 
+    @Autowired
+    private ApiKeyService apiKeyService;
+
     private static final long LOCKOUT_PERIOD_MILLIS = TimeUnit.MINUTES.toMillis(15);
     private static final String LOCKOUT_PERIOD_TEXT = "15 minutes";
+
+    @GetMapping("/home")
+    public String showAdminHome() {
+        return "admin-home";
+    }
 
     @GetMapping("/announcement")
     public String showAnnouncementForm(Model model) {
@@ -197,5 +208,29 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Failed to send message: " + e.getMessage());
         }
         return "redirect:/admin/direct-message";
+    }
+
+    @GetMapping("/api-keys")
+    public String showApiKeysPage() {
+        return "api-keys";
+    }
+
+    @PostMapping("/generate-api-key")
+    public String generateApiKey(@RequestParam String clientName, RedirectAttributes redirectAttributes) {
+        if (clientName == null || clientName.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Client name cannot be empty.");
+            return "redirect:/admin/api-keys";
+        }
+
+        try {
+            ApiKey newApiKey = apiKeyService.generateApiKey(clientName);
+            redirectAttributes.addFlashAttribute("success", "API Key generated successfully!");
+            redirectAttributes.addFlashAttribute("generatedKey", newApiKey.getApiKey());
+            redirectAttributes.addFlashAttribute("clientName", newApiKey.getClientName());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to generate API Key: " + e.getMessage());
+        }
+
+        return "redirect:/admin/api-keys";
     }
 }
