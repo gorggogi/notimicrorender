@@ -1,9 +1,7 @@
 package alertSystemSMS.notificationMicroservice.model;
 
 import jakarta.persistence.*;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "api_keys")
@@ -19,9 +17,8 @@ public class ApiKey {
     @Column(name = "clientName", nullable = false)
     private String clientName;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "createdDate", nullable = false)
-    private Date createdDate;
+    private LocalDateTime createdDate;
 
     private boolean active;
 
@@ -31,7 +28,7 @@ public class ApiKey {
     public ApiKey(String apiKey, String clientName) {
         this.apiKey = apiKey;
         this.clientName = clientName;
-        this.createdDate = new Date();
+        this.createdDate = LocalDateTime.now();
         this.active = true;
     }
 
@@ -61,11 +58,11 @@ public class ApiKey {
         this.clientName = clientName;
     }
 
-    public Date getCreatedDate() {
+    public LocalDateTime getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(Date createdDate) {
+    public void setCreatedDate(LocalDateTime createdDate) {
         this.createdDate = createdDate;
     }
 

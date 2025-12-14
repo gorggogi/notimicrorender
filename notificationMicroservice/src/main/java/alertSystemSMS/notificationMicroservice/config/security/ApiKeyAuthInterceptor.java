@@ -4,10 +4,7 @@ import alertSystemSMS.notificationMicroservice.model.ApiKey;
 import alertSystemSMS.notificationMicroservice.repository.ApiKeyRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Optional;
@@ -15,16 +12,14 @@ import java.util.Optional;
 @Component
 public class ApiKeyAuthInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    private ApiKeyRepository apiKeyRepository;
+    private final ApiKeyRepository apiKeyRepository;
+
+    public ApiKeyAuthInterceptor(ApiKeyRepository apiKeyRepository) {
+        this.apiKeyRepository = apiKeyRepository;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (apiKeyRepository == null) {
-            WebApplicationContext appContext = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
-            this.apiKeyRepository = appContext.getBean(ApiKeyRepository.class);
-        }
-
         String apiKeyHeader = request.getHeader("X-API-KEY");
 
         if (apiKeyHeader == null || apiKeyHeader.isEmpty()) {
