@@ -79,13 +79,14 @@ public class NotificationController {
     @PostMapping("/send/user/{userId}")
     public ResponseEntity<String> sendNotificationToUser(
             @PathVariable Long userId,
-            @RequestBody Map<String, String> payload) {
+            @RequestBody Map<String, String> payload,
+            Principal principal) {
         String content = payload.get("content");
         if (content == null || content.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Content is required");
         }
         
-        boolean success = notificationService.sendNotificationToUser(userId, content);
+        boolean success = notificationService.sendNotificationToUser(userId, content, principal);
         if (success) {
             return ResponseEntity.ok("Notification sent successfully to user " + userId);
         } else {
@@ -94,13 +95,13 @@ public class NotificationController {
     }
 
     @PostMapping("/send/all")
-    public ResponseEntity<String> sendNotificationToAllUsers(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<String> sendNotificationToAllUsers(@RequestBody Map<String, String> payload, Principal principal) {
         String content = payload.get("content");
         if (content == null || content.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Content is required");
         }
         
-        int sentCount = notificationService.sendNotificationToAllUsers(content);
+        int sentCount = notificationService.sendNotificationToAllUsers(content, principal);
         return ResponseEntity.ok("Notification sent to " + sentCount + " users");
     }
 

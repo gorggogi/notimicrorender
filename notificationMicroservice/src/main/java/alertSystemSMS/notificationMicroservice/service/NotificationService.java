@@ -151,22 +151,26 @@ public class NotificationService {
         return responseList;
     }
 
-    public boolean sendNotificationToUser(Long userId, String content) {
+    @Transactional
+    public boolean sendNotificationToUser(Long userId, String content, Principal principal) {
         Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                smsRoutingService.sendSms(user.getUserPhoneNumber(), content, null);
-                System.out.println("Notification sent to user " + userId + ": " + content);
-                return true;
-            } else {
-                System.err.println("User " + userId + " has no phone number");
-                return false;
-            }
-        } else {
-            System.err.println("User " + userId + " not found");
+        if (userOpt.isEmpty() || userOpt.get().getUserPhoneNumber() == null || userOpt.get().getUserPhoneNumber().isEmpty()) {
+            logger.error("Cannot send notification: User {} not found or has no phone number.", userId);
             return false;
         }
+
+        User user = userOpt.get();
+        String sentBy = (principal != null) ? principal.getName() : "API";
+
+        Notification notification = new Notification();
+        notification.setMessageContent(content);
+        notification.setSentBy(sentBy);
+        // Note: No AlertType for this kind of direct notification
+        Notification savedNotification = notificationRepository.save(notification);
+
+        smsRoutingService.sendSms(user.getUserPhoneNumber(), content, savedNotification);
+        logger.info("Notification sent to user {}: {}", userId, content);
+        return true;
     }
 
 
@@ -195,19 +199,28 @@ public class NotificationService {
         }
     }
 
-    public int sendNotificationToAllUsers(String content) {
+    @Transactional
+    public int sendNotificationToAllUsers(String content, Principal principal) {
         List<User> allUsers = userRepository.findAll();
         int sentCount = 0;
-        
-        System.out.println("Sending notification to all users: " + content);
+
+        String sentBy = (principal != null) ? principal.getName() : "API";
+
+        // Create a single notification record for this broadcast
+        Notification notification = new Notification();
+        notification.setMessageContent(content);
+        notification.setSentBy(sentBy);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        logger.info("Sending broadcast notification to all users: {}", content);
         for (User user : allUsers) {
             if (user.getUserPhoneNumber() != null && !user.getUserPhoneNumber().isEmpty()) {
-                smsRoutingService.sendSms(user.getUserPhoneNumber(), content, null);
+                smsRoutingService.sendSms(user.getUserPhoneNumber(), content, savedNotification);
                 sentCount++;
             }
         }
         
-        System.out.println("Notification sent to " + sentCount + " out of " + allUsers.size() + " users");
+        logger.info("Broadcast notification sent to {} out of {} users", sentCount, allUsers.size());
         return sentCount;
     }
 }

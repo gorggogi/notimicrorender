@@ -20,7 +20,7 @@ public class TestController {
     public ResponseEntity<String> testSendToUser(@PathVariable Long userId) {
         try {
             String content = "TEST: Payment receipt for user " + userId + " - Amount: $99.99";
-            boolean success = notificationService.sendNotificationToUser(userId, content);
+            boolean success = notificationService.sendNotificationToUser(userId, content, null);
             
             if (success) {
                 return ResponseEntity.ok("SUCCESS: Notification sent to user " + userId);
@@ -39,7 +39,7 @@ public class TestController {
     public ResponseEntity<String> testSendToAll() {
         try {
             String content = "TEST: System announcement - New features available!";
-            int sentCount = notificationService.sendNotificationToAllUsers(content);
+            int sentCount = notificationService.sendNotificationToAllUsers(content, null);
             
             return ResponseEntity.ok("SUCCESS: Notification sent to " + sentCount + " users");
         } catch (Exception e) {
@@ -59,17 +59,17 @@ public class TestController {
         try {
             // Test 1: Valid user
             results.append("Test 1 - Send to Valid User (ID: 1):\n");
-            boolean test1 = notificationService.sendNotificationToUser(1L, "Test message for user 1");
+            boolean test1 = notificationService.sendNotificationToUser(1L, "Test message for user 1", null);
             results.append(test1 ? "SUCCESS\n\n" : "FAILED\n\n");
 
             // Test 2: Invalid user
             results.append("Test 2 - Send to Invalid User (ID: 999):\n");
-            boolean test2 = notificationService.sendNotificationToUser(999L, "Test message for invalid user");
+            boolean test2 = notificationService.sendNotificationToUser(999L, "Test message for invalid user", null);
             results.append(test2 ? "UNEXPECTED SUCCESS\n\n" : "FAILED AS EXPECTED\n\n");
 
             // Test 3: Send to all users
             results.append("Test 3 - Send to All Users:\n");
-            int sentCount = notificationService.sendNotificationToAllUsers("Test broadcast message");
+            int sentCount = notificationService.sendNotificationToAllUsers("Test broadcast message", null);
             results.append("Sent to " + sentCount + " users\n\n");
 
             results.append("ALL TESTS COMPLETED!");
