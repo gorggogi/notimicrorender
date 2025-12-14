@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/preferences")
+@RequestMapping("/api/v1/preferences")
 public class UserPreferencesController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserPreferencesController.class);
