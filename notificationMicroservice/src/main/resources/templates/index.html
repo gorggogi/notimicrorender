@@ -99,14 +99,17 @@
                 <p class="text-gray-600">Add, edit, or remove notification categories.</p>
             </a>
              <a th:href="@{/admin/analytics}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-                <h2 class="text-xl font-bold text-gray-900 mb-2">View Analytics</h2>
-                <p class="text-gray-600">Check the delivery status and analytics of sent announcements.</p>
+               <h2 class="text-xl font-bold text-gray-900 mb-2">View Analytics</h2>
+               <p class="text-gray-600">Check the delivery status and analytics of sent announcements.</p>
+            </a>
+            <a th:href="@{/admin/api-keys}" class="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Manage API Keys</h2>
+                <p class="text-gray-600">Generate and manage API keys for client applications.</p>
             </a>
         </div>
-    </main>
+{{ ... }}
 
     <div th:replace="~{fragments/footer :: footer}"></div>
-
     <script th:src="@{/scripts/scripts.js}"></script>
 </body>
 </html>

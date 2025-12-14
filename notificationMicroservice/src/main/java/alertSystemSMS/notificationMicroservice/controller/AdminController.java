@@ -48,11 +48,6 @@ public class AdminController {
     private static final long LOCKOUT_PERIOD_MILLIS = TimeUnit.MINUTES.toMillis(15);
     private static final String LOCKOUT_PERIOD_TEXT = "15 minutes";
 
-    @GetMapping("/home")
-    public String showAdminHome() {
-        return "admin-home";
-    }
-
     @GetMapping("/announcement")
     public String showAnnouncementForm(Model model) {
         model.addAttribute("alertTypes", alertTypeService.findAllAlertTypes());
