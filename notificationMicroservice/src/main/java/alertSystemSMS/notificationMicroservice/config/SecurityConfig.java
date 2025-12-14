@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 
 @Configuration
@@ -40,11 +41,9 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
-            // This chain should ignore API paths
-            .securityMatcher("/**")
+            // This chain should NOT handle API paths
+            .securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/api/**")))
             .authorizeHttpRequests(authz -> authz
-                // Ignore API paths, they are handled by the apiFilterChain
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/**")).permitAll()
                 // Allow access to static resources like CSS and JavaScript
                 .requestMatchers(
                     AntPathRequestMatcher.antMatcher("/styles/**"),
