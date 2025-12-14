@@ -153,6 +153,7 @@ public class NotificationService {
 
     @Transactional
     public boolean sendNotificationToUser(Long userId, String content, Principal principal) {
+        logger.info("<<<<< V2 of sendNotificationToUser EXECUTED >>>>>");
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty() || userOpt.get().getUserPhoneNumber() == null || userOpt.get().getUserPhoneNumber().isEmpty()) {
             logger.error("Cannot send notification: User {} not found or has no phone number.", userId);
