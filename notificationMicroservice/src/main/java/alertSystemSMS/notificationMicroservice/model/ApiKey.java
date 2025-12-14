@@ -1,6 +1,8 @@
 package alertSystemSMS.notificationMicroservice.model;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import java.util.Date;
 
 @Entity
@@ -17,6 +19,7 @@ public class ApiKey {
     @Column(name = "clientName", nullable = false)
     private String clientName;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "createdDate", nullable = false)
     private Date createdDate;
 
