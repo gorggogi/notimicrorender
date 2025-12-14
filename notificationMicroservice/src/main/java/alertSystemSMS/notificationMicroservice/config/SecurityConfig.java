@@ -27,9 +27,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").permitAll()
                 // 2. Static resources: Allow public access
                 .requestMatchers("/styles/**", "/scripts/**").permitAll()
-                // 3. Admin pages: Require ADMIN role
+                // 3. Error endpoint: Allow public access for error rendering
+                .requestMatchers("/error").permitAll()
+                // 4. Admin pages: Require ADMIN role
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // 4. All other requests: Require authentication
+                // 5. All other requests: Require authentication
                 .anyRequest().authenticated()
             )
             // 5. CSRF Handling: Disable for API, enable for web
