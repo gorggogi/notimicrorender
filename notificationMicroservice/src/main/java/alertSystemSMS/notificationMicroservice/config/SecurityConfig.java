@@ -16,28 +16,23 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
     @Bean
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
             // This chain applies to API endpoints
-            .securityMatcher("/api/v1/**", "/test/**")
+            .securityMatcher("/api/**")
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                // Allow unauthenticated access to the direct send endpoint
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/send/direct")).permitAll()
-                // All other API requests must be authenticated
-                .anyRequest().authenticated()
+                // API requests are handled by the ApiKeyAuthInterceptor, not Spring Security
+                .anyRequest().permitAll()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .httpBasic(withDefaults()); // Use HTTP Basic for other API calls (e.g., from Postman with auth)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
@@ -45,7 +40,11 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
+            // This chain should ignore API paths
+            .securityMatcher("/**")
             .authorizeHttpRequests(authz -> authz
+                // Ignore API paths, they are handled by the apiFilterChain
+                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/**")).permitAll()
                 // Allow access to static resources like CSS and JavaScript
                 .requestMatchers(
                     AntPathRequestMatcher.antMatcher("/styles/**"),
