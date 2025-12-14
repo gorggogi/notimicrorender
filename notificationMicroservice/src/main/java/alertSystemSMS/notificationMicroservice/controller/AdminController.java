@@ -210,7 +210,7 @@ public class AdminController {
         return "api-keys";
     }
 
-    @PostMapping("/generate-api-key")
+    @PostMapping("/api-keys/generate")
     public String generateApiKey(@RequestParam String clientName, RedirectAttributes redirectAttributes) {
         if (clientName == null || clientName.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Client name cannot be empty.");
